@@ -1,0 +1,80 @@
+window.COEVOLVES_LIBRARY_ITEMS = [
+  {
+    id: "resume-bullets-story",
+    title: "Resume Bullets Story",
+    href: "coevolves_resume_bullets_story.html",
+    kind: "page",
+    area: "interview",
+    status: "ready",
+    updated: "2026-06-30",
+    owner: "Jacky",
+    featured: true,
+    summary: "把 Co-evolves 五条 resume bullet 串成一条完整的数据产品链路。",
+    tags: ["resume", "interview", "data analyst", "project story"]
+  },
+  {
+    id: "project-design-document",
+    title: "Project Design Document",
+    href: "coevolves_project_design_document.html",
+    kind: "page",
+    area: "architecture",
+    status: "ready",
+    updated: "2026-06-30",
+    owner: "Jacky",
+    featured: true,
+    summary: "从需求、架构、数据模型、质量门到上线运维的 insurance regulatory reporting 设计文档。",
+    tags: ["design doc", "architecture", "quality gates", "Regul8"]
+  },
+  {
+    id: "dbt-sql-validation",
+    title: "dbt SQL Validation Explained",
+    href: "dbt_sql_validation_explained.html",
+    kind: "page",
+    area: "validation",
+    status: "ready",
+    updated: "2026-06-30",
+    owner: "Jacky",
+    featured: true,
+    summary: "解释 SQL validation scripts in dbt 如何支持 mandatory regulatory reporting 和 audit prep。",
+    tags: ["dbt", "SQL", "validation", "audit evidence"]
+  },
+  {
+    id: "rest-api-beginner-guide",
+    title: "REST API Beginner Guide",
+    href: "rest_api_beginner_guide.html",
+    kind: "page",
+    area: "concept",
+    status: "ready",
+    updated: "2026-06-30",
+    owner: "Jacky",
+    featured: true,
+    summary: "用点餐窗口类比 GET、POST、PUT、DELETE 和 JSON response 的入门讲解。",
+    tags: ["REST API", "beginner", "interactive", "JSON"]
+  },
+  {
+    id: "coevolves-platform-pdf",
+    title: "CoEvolves Digital Insurance Platform PDF",
+    href: "CoEvolves - Digital Insurance Platform _ Streamline Your P&C Operations.pdf",
+    kind: "file",
+    area: "evidence",
+    status: "ready",
+    updated: "2026-06-30",
+    owner: "Jacky",
+    featured: false,
+    summary: "CoEvolves platform reference PDF，用来核对产品语境和保险 SaaS 业务表述。",
+    tags: ["PDF", "platform", "insurance", "reference"]
+  },
+  {
+    id: "insurance-data-analysis-notebook",
+    title: "Complete Insurance Data Analysis Notebook",
+    href: "complete-insurance-data-analysis.ipynb",
+    kind: "notebook",
+    area: "evidence",
+    status: "ready",
+    updated: "2026-06-30",
+    owner: "Jacky",
+    featured: false,
+    summary: "项目分析 notebook，适合作为后续图表、SQL、pipeline 讲解页的素材来源。",
+    tags: ["notebook", "analysis", "Python", "source material"]
+  }
+];

@@ -3,19 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Co-evolves Project Study Hub</title>
+  <title>Co-evolves Knowledge Base</title>
   <style>
     :root {
-      --ink: #1f2933;
-      --muted: #607183;
+      --ink: #18212b;
+      --muted: #5f6f82;
       --paper: #ffffff;
-      --soft: #f4f7fb;
-      --line: #d8e1ea;
+      --soft: #f5f7fb;
+      --line: #d9e2ec;
+      --nav: #223142;
       --blue: #2563eb;
-      --teal: #0f766e;
-      --orange: #c05621;
-      --purple: #6655d9;
-      --nav: #24313f;
+      --green: #0f766e;
+      --amber: #b45309;
+      --rose: #be123c;
+      --shadow: 0 14px 30px rgba(24, 33, 43, 0.08);
     }
 
     * {
@@ -27,7 +28,7 @@
       color: var(--ink);
       background: var(--soft);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
-      line-height: 1.65;
+      line-height: 1.55;
     }
 
     a {
@@ -35,25 +36,42 @@
       text-decoration: none;
     }
 
-    .hero {
-      color: #ffffff;
+    button,
+    input {
+      font: inherit;
+    }
+
+    .topbar {
+      color: #f8fafc;
       background: var(--nav);
-      border-bottom: 1px solid #17212b;
+      border-bottom: 1px solid #162231;
     }
 
     .inner {
-      width: min(1120px, calc(100vw - 48px));
+      width: min(1180px, calc(100vw - 40px));
       margin: 0 auto;
-      padding: 44px 0;
+    }
+
+    .topbar .inner {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 24px;
+      align-items: center;
+      padding: 28px 0;
+    }
+
+    .brand {
+      display: grid;
+      gap: 6px;
     }
 
     .eyebrow {
-      margin: 0 0 10px;
+      margin: 0;
       color: #9fe0d0;
+      font-size: 12px;
       font-weight: 800;
-      font-size: 13px;
-      text-transform: uppercase;
       letter-spacing: 0;
+      text-transform: uppercase;
     }
 
     h1,
@@ -64,261 +82,614 @@
     }
 
     h1 {
-      max-width: 840px;
-      font-size: clamp(34px, 5vw, 60px);
-      line-height: 1.16;
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 1.15;
       letter-spacing: 0;
     }
 
     .lead {
       max-width: 760px;
-      margin-top: 18px;
-      color: #c9d6e2;
-      font-size: 18px;
+      color: #cbd7e5;
+      font-size: 16px;
     }
 
-    .meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 24px;
-    }
-
-    .pill {
+    .repo-link {
       display: inline-flex;
       align-items: center;
-      min-height: 32px;
+      justify-content: center;
+      min-height: 40px;
+      padding: 0 14px;
+      color: #eef6ff;
+      background: #31465d;
+      border: 1px solid #4e6580;
+      border-radius: 8px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 22px;
+      padding: 24px 0 42px;
+    }
+
+    .sidebar {
+      align-self: start;
+      display: grid;
+      gap: 14px;
+      position: sticky;
+      top: 18px;
+    }
+
+    .panel {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .panel-pad {
+      padding: 16px;
+    }
+
+    .panel-title {
+      margin-bottom: 10px;
+      color: #26384c;
+      font-size: 14px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .search {
+      width: 100%;
+      min-height: 42px;
       padding: 0 12px;
-      color: #e8f2fb;
-      background: #324456;
-      border: 1px solid #4b6075;
-      border-radius: 999px;
+      color: var(--ink);
+      background: #ffffff;
+      border: 1px solid #c9d6e2;
+      border-radius: 8px;
+      outline: none;
+    }
+
+    .search:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+    }
+
+    .segmented {
+      display: grid;
+      gap: 8px;
+    }
+
+    .filter-button {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      min-height: 38px;
+      padding: 0 10px;
+      color: #33465d;
+      background: #f8fafc;
+      border: 1px solid #d8e1ea;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .filter-button[aria-pressed="true"] {
+      color: #ffffff;
+      background: var(--blue);
+      border-color: var(--blue);
+    }
+
+    .filter-count {
+      color: inherit;
+      opacity: 0.76;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .mini-guide {
+      display: grid;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .mini-guide strong {
+      color: var(--ink);
+    }
+
+    .mini-guide code {
+      color: #25364a;
+      background: #edf2f7;
+      border: 1px solid #d8e1ea;
+      border-radius: 6px;
+      padding: 1px 5px;
+    }
+
+    .main {
+      display: grid;
+      gap: 18px;
+      min-width: 0;
+    }
+
+    .summary-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .metric {
+      min-height: 82px;
+      padding: 14px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
       font-size: 13px;
-      font-weight: 700;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .metric strong {
+      display: block;
+      margin-top: 4px;
+      font-size: 26px;
+      line-height: 1.15;
     }
 
     .section-head {
-      display: grid;
-      gap: 8px;
-      margin-bottom: 22px;
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: end;
     }
 
     .section-head h2 {
-      font-size: clamp(26px, 3vw, 38px);
+      font-size: 24px;
       line-height: 1.2;
     }
 
-    .section-head p {
-      max-width: 860px;
+    .result-note {
       color: var(--muted);
-      font-size: 17px;
+      font-size: 14px;
+      text-align: right;
     }
 
-    .grid {
+    .library-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 18px;
+      gap: 14px;
     }
 
-    .card {
+    .item-card {
       display: grid;
       gap: 12px;
-      min-height: 232px;
-      padding: 20px;
+      min-height: 216px;
+      padding: 18px;
       background: var(--paper);
       border: 1px solid var(--line);
       border-radius: 8px;
       transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
     }
 
-    .card:hover {
+    .item-card:hover,
+    .item-card:focus-visible {
       transform: translateY(-2px);
-      border-color: #9bbce9;
-      box-shadow: 0 18px 40px rgba(31, 41, 51, 0.08);
+      border-color: #8db3e8;
+      box-shadow: var(--shadow);
+      outline: none;
     }
 
-    .card-top {
+    .item-top {
       display: flex;
       justify-content: space-between;
-      gap: 12px;
+      gap: 14px;
       align-items: start;
     }
 
-    .icon {
-      display: inline-grid;
-      place-items: center;
-      width: 44px;
-      height: 44px;
-      color: #ffffff;
-      background: var(--blue);
-      border-radius: 8px;
-      font-weight: 900;
+    .item-title {
+      display: grid;
+      gap: 6px;
     }
 
-    .card:nth-child(2) .icon {
-      background: var(--teal);
+    .item-title h3 {
+      font-size: 21px;
+      line-height: 1.22;
     }
 
-    .card:nth-child(3) .icon {
-      background: var(--orange);
-    }
-
-    .card:nth-child(4) .icon {
-      background: var(--purple);
-    }
-
-    .card h3 {
-      font-size: 22px;
-      line-height: 1.2;
-    }
-
-    .card p {
-      color: var(--muted);
-    }
-
-    .tag-row {
+    .badge-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
-      margin-top: auto;
+      gap: 7px;
     }
 
-    .tag {
-      padding: 5px 8px;
-      color: #34495e;
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 0 8px;
+      color: #2f4156;
       background: #edf2f7;
+      border: 1px solid #d8e1ea;
       border-radius: 999px;
       font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .badge.kind-page {
+      color: #1e3a8a;
+      background: #dbeafe;
+      border-color: #bfdbfe;
+    }
+
+    .badge.kind-file {
+      color: #115e59;
+      background: #ccfbf1;
+      border-color: #99f6e4;
+    }
+
+    .badge.kind-notebook {
+      color: #92400e;
+      background: #fef3c7;
+      border-color: #fde68a;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 58px;
+      min-height: 28px;
+      padding: 0 8px;
+      color: #ffffff;
+      background: var(--green);
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .status.draft {
+      background: var(--amber);
+    }
+
+    .status.archive {
+      background: var(--rose);
+    }
+
+    .summary {
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .meta-line {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: auto;
+      color: #6d7f92;
+      font-size: 13px;
       font-weight: 700;
     }
 
-    .note {
-      margin-top: 18px;
-      padding: 16px 18px;
-      color: #34495e;
-      background: #fff8e6;
-      border: 1px solid #e9c46a;
+    .empty {
+      display: none;
+      padding: 28px;
+      color: var(--muted);
+      background: var(--paper);
+      border: 1px dashed #b6c5d5;
       border-radius: 8px;
+      text-align: center;
+    }
+
+    .empty.is-visible {
+      display: block;
     }
 
     .footer {
-      color: #c9d6e2;
+      color: #cbd7e5;
       background: var(--nav);
     }
 
     .footer .inner {
-      padding: 24px 0;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 20px 0;
+      font-size: 14px;
     }
 
-    @media (max-width: 820px) {
-      .grid {
+    .footer a {
+      color: #ffffff;
+      font-weight: 800;
+    }
+
+    @media (max-width: 960px) {
+      .topbar .inner,
+      .workspace {
         grid-template-columns: 1fr;
       }
 
+      .sidebar {
+        position: static;
+      }
+
+      .summary-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 700px) {
       .inner {
-        width: min(100% - 28px, 1120px);
-        padding: 32px 0;
+        width: min(100% - 28px, 1180px);
+      }
+
+      .topbar .inner {
+        padding: 24px 0;
+      }
+
+      .library-grid,
+      .summary-strip {
+        grid-template-columns: 1fr;
+      }
+
+      .section-head {
+        display: grid;
+      }
+
+      .result-note {
+        text-align: left;
       }
     }
   </style>
 </head>
 <body>
-  <header class="hero">
+  <header class="topbar">
     <div class="inner">
-      <p class="eyebrow">Co-evolves Study Hub</p>
-      <h1>Insurance SaaS 项目讲解中心</h1>
-      <p class="lead">
-        这里汇总了 Co-evolves 简历 bullet、Regul8/dbt SQL validation、REST API 和项目 design document 的可视化讲解页面。适合放进 GitHub Pages，再嵌入 Notion。
-      </p>
-      <div class="meta">
-        <span class="pill">Regul8</span>
-        <span class="pill">dbt SQL Validation</span>
-        <span class="pill">REST API</span>
-        <span class="pill">Tableau Analytics</span>
-        <span class="pill">Resume Story</span>
+      <div class="brand">
+        <p class="eyebrow">Co-evolves Knowledge Base</p>
+        <h1>可持续增长的项目资料库</h1>
+        <p class="lead">把讲解页、PDF、notebook 和面试素材统一放进一个 GitHub Pages 目录，后续新增内容只需要更新 catalog。</p>
       </div>
+      <a class="repo-link" href="https://github.com/lh-gym/Co-evolves">GitHub Repo</a>
     </div>
   </header>
 
-  <main>
-    <section class="inner">
+  <main class="inner workspace">
+    <aside class="sidebar" aria-label="Catalog filters">
+      <section class="panel panel-pad">
+        <h2 class="panel-title">Search</h2>
+        <input id="searchInput" class="search" type="search" placeholder="Search title, tag, topic" autocomplete="off">
+      </section>
+
+      <section class="panel panel-pad">
+        <h2 class="panel-title">Topic</h2>
+        <div id="areaFilters" class="segmented"></div>
+      </section>
+
+      <section class="panel panel-pad">
+        <h2 class="panel-title">Format</h2>
+        <div id="kindFilters" class="segmented"></div>
+      </section>
+
+      <section class="panel panel-pad">
+        <h2 class="panel-title">Add Flow</h2>
+        <div class="mini-guide">
+          <p><strong>1.</strong> Upload files under <code>items/topic-name/</code> or keep one-page HTML files at root.</p>
+          <p><strong>2.</strong> Add one object to <code>content/catalog.js</code>.</p>
+          <p><strong>3.</strong> GitHub Pages updates this homepage automatically.</p>
+          <p><a href="docs/add-new-item.html">Open the full checklist</a></p>
+        </div>
+      </section>
+    </aside>
+
+    <section class="main" aria-label="Library">
+      <div class="summary-strip">
+        <div class="metric">
+          <span>Total items</span>
+          <strong id="totalCount">0</strong>
+        </div>
+        <div class="metric">
+          <span>Pages</span>
+          <strong id="pageCount">0</strong>
+        </div>
+        <div class="metric">
+          <span>Files</span>
+          <strong id="fileCount">0</strong>
+        </div>
+        <div class="metric">
+          <span>Topics</span>
+          <strong id="topicCount">0</strong>
+        </div>
+      </div>
+
       <div class="section-head">
-        <h2>打开一个讲解页</h2>
-        <p>上传到 GitHub Pages 后，这些链接会在同一个站点内打开。建议在 Notion 里 embed 这个首页。</p>
+        <h2>Library</h2>
+        <p id="resultNote" class="result-note"></p>
       </div>
 
-      <div class="grid">
-        <a class="card" href="coevolves_resume_bullets_story.html">
-          <div class="card-top">
-            <div>
-              <h3>Resume Bullets Story</h3>
-              <p>把 Co-evolves 五条简历 bullet 串成一条完整的数据产品链路：API、pipeline、dbt、dashboard、renewal analysis。</p>
-            </div>
-            <div class="icon">1</div>
-          </div>
-          <div class="tag-row">
-            <span class="tag">resume</span>
-            <span class="tag">interview</span>
-            <span class="tag">CoEvolves context</span>
-          </div>
-        </a>
-
-        <a class="card" href="coevolves_project_design_document.html">
-          <div class="card-top">
-            <div>
-              <h3>Project Design Document</h3>
-              <p>正式设计文档风格，展示这个 insurance regulatory reporting 项目如何从需求、架构、数据模型到上线落地。</p>
-            </div>
-            <div class="icon">2</div>
-          </div>
-          <div class="tag-row">
-            <span class="tag">design doc</span>
-            <span class="tag">architecture</span>
-            <span class="tag">quality gates</span>
-          </div>
-        </a>
-
-        <a class="card" href="dbt_sql_validation_explained.html">
-          <div class="card-top">
-            <div>
-              <h3>dbt SQL Validation Explained</h3>
-              <p>详细解释 SQL validation scripts in dbt 是怎么写、在哪运行、如何支持 mandatory regulatory reporting 和 audit prep。</p>
-            </div>
-            <div class="icon">3</div>
-          </div>
-          <div class="tag-row">
-            <span class="tag">dbt</span>
-            <span class="tag">Regul8</span>
-            <span class="tag">audit evidence</span>
-          </div>
-        </a>
-
-        <a class="card" href="rest_api_beginner_guide.html">
-          <div class="card-top">
-            <div>
-              <h3>REST API Beginner Guide</h3>
-              <p>给完全没听过 REST API 的人看的入门讲解，用点餐窗口类比 GET、POST、PUT、DELETE 和 JSON response。</p>
-            </div>
-            <div class="icon">4</div>
-          </div>
-          <div class="tag-row">
-            <span class="tag">REST API</span>
-            <span class="tag">beginner</span>
-            <span class="tag">interactive</span>
-          </div>
-        </a>
-      </div>
-
-      <div class="note">
-        GitHub Pages 当前截图显示已经启用，发布源是 <strong>main / root</strong>。因此只要把这个文件和其他 HTML 放到 repo 根目录，访问 <strong>https://lh-gym.github.io/Co-evolves/</strong> 就会显示这个目录页。
-      </div>
+      <div id="libraryGrid" class="library-grid"></div>
+      <div id="emptyState" class="empty">No matching items yet.</div>
     </section>
   </main>
 
   <footer class="footer">
     <div class="inner">
-      <p>Built as static HTML pages. No server required.</p>
+      <p>Static GitHub Pages site. No build step required.</p>
+      <a href="content/catalog.js">Catalog source</a>
     </div>
   </footer>
+
+  <script src="content/catalog.js"></script>
+  <script>
+    const items = Array.isArray(window.COEVOLVES_LIBRARY_ITEMS) ? window.COEVOLVES_LIBRARY_ITEMS : [];
+    const state = {
+      area: "all",
+      kind: "all",
+      query: ""
+    };
+
+    const labels = {
+      all: "All",
+      concept: "Concept",
+      interview: "Interview",
+      architecture: "Architecture",
+      validation: "Validation",
+      evidence: "Evidence",
+      page: "Page",
+      file: "File",
+      notebook: "Notebook"
+    };
+
+    const elements = {
+      searchInput: document.querySelector("#searchInput"),
+      areaFilters: document.querySelector("#areaFilters"),
+      kindFilters: document.querySelector("#kindFilters"),
+      libraryGrid: document.querySelector("#libraryGrid"),
+      emptyState: document.querySelector("#emptyState"),
+      totalCount: document.querySelector("#totalCount"),
+      pageCount: document.querySelector("#pageCount"),
+      fileCount: document.querySelector("#fileCount"),
+      topicCount: document.querySelector("#topicCount"),
+      resultNote: document.querySelector("#resultNote")
+    };
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function unique(values) {
+      return [...new Set(values.filter(Boolean))];
+    }
+
+    function labelFor(value) {
+      return labels[value] || value;
+    }
+
+    function itemSearchText(item) {
+      return [
+        item.title,
+        item.summary,
+        item.area,
+        item.kind,
+        item.status,
+        ...(item.tags || [])
+      ].join(" ").toLowerCase();
+    }
+
+    function itemMatches(item) {
+      const query = state.query.trim().toLowerCase();
+      const areaMatch = state.area === "all" || item.area === state.area;
+      const kindMatch = state.kind === "all" || item.kind === state.kind;
+      const queryMatch = !query || itemSearchText(item).includes(query);
+      return areaMatch && kindMatch && queryMatch;
+    }
+
+    function sortItems(list) {
+      return [...list].sort((a, b) => {
+        const featuredDelta = Number(Boolean(b.featured)) - Number(Boolean(a.featured));
+        if (featuredDelta) return featuredDelta;
+        return String(b.updated || "").localeCompare(String(a.updated || ""));
+      });
+    }
+
+    function countFor(field, value) {
+      if (value === "all") return items.length;
+      return items.filter((item) => item[field] === value).length;
+    }
+
+    function renderFilterGroup(container, field, activeValue, values) {
+      container.innerHTML = values.map((value) => {
+        const pressed = activeValue === value ? "true" : "false";
+        return `
+          <button class="filter-button" type="button" data-field="${field}" data-value="${escapeHtml(value)}" aria-pressed="${pressed}">
+            <span>${escapeHtml(labelFor(value))}</span>
+            <span class="filter-count">${countFor(field, value)}</span>
+          </button>
+        `;
+      }).join("");
+    }
+
+    function renderFilters() {
+      const areas = ["all", ...unique(items.map((item) => item.area))];
+      const kinds = ["all", ...unique(items.map((item) => item.kind))];
+      renderFilterGroup(elements.areaFilters, "area", state.area, areas);
+      renderFilterGroup(elements.kindFilters, "kind", state.kind, kinds);
+    }
+
+    function renderMetrics() {
+      elements.totalCount.textContent = items.length;
+      elements.pageCount.textContent = items.filter((item) => item.kind === "page").length;
+      elements.fileCount.textContent = items.filter((item) => item.kind === "file").length;
+      elements.topicCount.textContent = unique(items.map((item) => item.area)).length;
+    }
+
+    function renderCards() {
+      const filtered = sortItems(items.filter(itemMatches));
+      elements.libraryGrid.innerHTML = filtered.map((item) => {
+        const tags = (item.tags || []).map((tag) => `<span class="badge">${escapeHtml(tag)}</span>`).join("");
+        const target = item.kind === "page" ? "_self" : "_blank";
+        const rel = item.kind === "page" ? "" : " rel=\"noopener\"";
+        const status = item.status || "ready";
+        return `
+          <a class="item-card" href="${escapeHtml(item.href)}" target="${target}"${rel}>
+            <div class="item-top">
+              <div class="item-title">
+                <div class="badge-row">
+                  <span class="badge kind-${escapeHtml(item.kind)}">${escapeHtml(labelFor(item.kind))}</span>
+                  <span class="badge">${escapeHtml(labelFor(item.area))}</span>
+                </div>
+                <h3>${escapeHtml(item.title)}</h3>
+              </div>
+              <span class="status ${escapeHtml(status)}">${escapeHtml(status)}</span>
+            </div>
+            <p class="summary">${escapeHtml(item.summary)}</p>
+            <div class="badge-row">${tags}</div>
+            <div class="meta-line">
+              <span>Updated ${escapeHtml(item.updated || "n/a")}</span>
+              <span>${escapeHtml(item.owner || "Jacky")}</span>
+            </div>
+          </a>
+        `;
+      }).join("");
+
+      elements.emptyState.classList.toggle("is-visible", filtered.length === 0);
+      elements.resultNote.textContent = `${filtered.length} shown`;
+    }
+
+    function render() {
+      renderFilters();
+      renderMetrics();
+      renderCards();
+    }
+
+    document.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-field][data-value]");
+      if (!button) return;
+      state[button.dataset.field] = button.dataset.value;
+      render();
+    });
+
+    elements.searchInput.addEventListener("input", (event) => {
+      state.query = event.target.value;
+      renderCards();
+    });
+
+    render();
+  </script>
 </body>
 </html>

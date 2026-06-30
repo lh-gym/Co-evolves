@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Add New Material | Co-evolves Knowledge Base</title>
+  <style>
+    :root {
+      --ink: #18212b;
+      --muted: #5f6f82;
+      --paper: #ffffff;
+      --soft: #f5f7fb;
+      --line: #d9e2ec;
+      --nav: #223142;
+      --blue: #2563eb;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--soft);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+      line-height: 1.65;
+    }
+
+    a {
+      color: var(--blue);
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    code {
+      color: #26384c;
+      background: #edf2f7;
+      border: 1px solid #d8e1ea;
+      border-radius: 6px;
+      padding: 1px 5px;
+    }
+
+    pre {
+      overflow-x: auto;
+      padding: 16px;
+      color: #e8eef6;
+      background: #1f2d3d;
+      border-radius: 8px;
+    }
+
+    pre code {
+      color: inherit;
+      background: transparent;
+      border: 0;
+      padding: 0;
+    }
+
+    .topbar {
+      color: #f8fafc;
+      background: var(--nav);
+      border-bottom: 1px solid #162231;
+    }
+
+    .inner {
+      width: min(920px, calc(100vw - 40px));
+      margin: 0 auto;
+    }
+
+    .topbar .inner {
+      display: grid;
+      gap: 10px;
+      padding: 28px 0;
+    }
+
+    .back {
+      color: #9fe0d0;
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    h1,
+    h2,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: clamp(28px, 4vw, 42px);
+      line-height: 1.15;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      max-width: 760px;
+      color: #cbd7e5;
+      font-size: 16px;
+    }
+
+    main {
+      display: grid;
+      gap: 18px;
+      padding: 24px 0 42px;
+    }
+
+    section {
+      padding: 20px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    h2 {
+      margin-bottom: 12px;
+      font-size: 22px;
+      line-height: 1.2;
+    }
+
+    ol,
+    ul {
+      margin: 0;
+      padding-left: 22px;
+    }
+
+    li + li {
+      margin-top: 8px;
+    }
+
+    .note {
+      color: #33465d;
+      background: #fff8e6;
+      border-color: #e9c46a;
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="inner">
+      <a class="back" href="../index.html">Back to Library</a>
+      <h1>Add New Material</h1>
+      <p class="lead">Keep the repo scalable by storing files predictably and registering every public item in one catalog.</p>
+    </div>
+  </header>
+
+  <main class="inner">
+    <section>
+      <h2>Fast Path</h2>
+      <ol>
+        <li>Put the new file in a stable location: root for short one-page URLs, or <code>items/topic-name/</code> for new topic folders.</li>
+        <li>Edit <code>content/catalog.js</code>.</li>
+        <li>Copy an existing object, paste it at the end of the array, and update the fields.</li>
+        <li>Commit to <code>main</code>.</li>
+        <li>Open <a href="https://lh-gym.github.io/Co-evolves/">https://lh-gym.github.io/Co-evolves/</a> after GitHub Pages refreshes.</li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Naming Rules</h2>
+      <ul>
+        <li>Use lowercase folder names: <code>items/sql-validation/</code>.</li>
+        <li>Prefer hyphens over spaces: <code>audit-evidence-checklist.html</code>.</li>
+        <li>Keep public URLs stable once shared in Notion or a resume.</li>
+        <li>Use a private repo for private resumes, IDs, contact lists, or client-confidential material.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Catalog Example</h2>
+      <pre><code>{
+  id: "audit-evidence-checklist",
+  title: "Audit Evidence Checklist",
+  href: "items/audit-evidence/audit-evidence-checklist.html",
+  kind: "page",
+  area: "validation",
+  status: "ready",
+  updated: "2026-07-01",
+  owner: "Jacky",
+  featured: false,
+  summary: "A checklist for explaining how validation outputs become audit evidence.",
+  tags: ["audit", "dbt", "evidence", "interview"]
+}</code></pre>
+    </section>
+
+    <section class="note">
+      <h2>Public Repo Rule</h2>
+      <p>This site is public. Anything committed here can be accessed if someone knows the URL, even if it is not shown on the homepage.</p>
+    </section>
+  </main>
+</body>
+</html>
