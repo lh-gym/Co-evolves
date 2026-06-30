@@ -1,0 +1,1748 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>dbt SQL Validation 是怎么做出来的</title>
+  <style>
+    :root {
+      --ink: #1f2933;
+      --muted: #607183;
+      --soft: #f4f7fb;
+      --paper: #ffffff;
+      --line: #d8e1ea;
+      --nav: #24313f;
+      --blue: #2563eb;
+      --teal: #0f766e;
+      --green: #11845b;
+      --orange: #c05621;
+      --red: #c2413a;
+      --purple: #635bff;
+      --code: #111827;
+      --code2: #1f2937;
+      --warn: #fff8e6;
+      --warn-line: #e9c46a;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--soft);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+      line-height: 1.65;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .page {
+      display: grid;
+      grid-template-columns: 278px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+      padding: 24px 20px;
+      color: #eef4fb;
+      background: var(--nav);
+      border-right: 1px solid #17212b;
+    }
+
+    .brand {
+      display: grid;
+      gap: 6px;
+      margin-bottom: 24px;
+    }
+
+    .brand strong {
+      font-size: 20px;
+      line-height: 1.25;
+    }
+
+    .brand span {
+      color: #b8c5d2;
+      font-size: 13px;
+    }
+
+    .nav {
+      display: grid;
+      gap: 8px;
+    }
+
+    .nav a {
+      color: #eef4fb;
+      text-decoration: none;
+      padding: 9px 10px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .nav a:hover {
+      background: #324456;
+      border-color: #4b6075;
+    }
+
+    main {
+      min-width: 0;
+    }
+
+    .band {
+      background: var(--paper);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .band.alt {
+      background: #fbfdff;
+    }
+
+    .inner {
+      width: min(1180px, calc(100vw - 64px));
+      margin: 0 auto;
+      padding: 42px 0;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 0.95fr) minmax(340px, 1.05fr);
+      gap: 34px;
+      align-items: center;
+      min-height: 86vh;
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--teal);
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      font-size: clamp(34px, 5.2vw, 62px);
+      max-width: 780px;
+    }
+
+    h2 {
+      font-size: clamp(26px, 3vw, 38px);
+    }
+
+    h3 {
+      font-size: 20px;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    .lead {
+      max-width: 760px;
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    .section-head {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .section-head p {
+      max-width: 900px;
+      color: var(--muted);
+      font-size: 17px;
+    }
+
+    .bullet-card {
+      margin-top: 24px;
+      padding: 20px;
+      color: #22303c;
+      background: #fff8e6;
+      border: 1px solid var(--warn-line);
+      border-radius: 8px;
+    }
+
+    .bullet-card strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 16px;
+    }
+
+    .hero-visual {
+      display: grid;
+      gap: 14px;
+      padding: 18px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 18px 45px rgba(31, 41, 51, 0.08);
+    }
+
+    .mini-window {
+      overflow: hidden;
+      border: 1px solid #c8d3df;
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    .window-top {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 12px;
+      background: #edf2f7;
+      border-bottom: 1px solid #c8d3df;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #e76f51;
+    }
+
+    .dot:nth-child(2) {
+      background: #e9c46a;
+    }
+
+    .dot:nth-child(3) {
+      background: #2a9d8f;
+    }
+
+    .window-body {
+      display: grid;
+      gap: 8px;
+      padding: 14px;
+      color: #d7e7ff;
+      background: var(--code);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .cmd {
+      color: #93c5fd;
+    }
+
+    .ok {
+      color: #86efac;
+    }
+
+    .fail {
+      color: #fca5a5;
+    }
+
+    .caption {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      min-width: 0;
+      padding: 18px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .card h3 {
+      margin-bottom: 8px;
+    }
+
+    .card p,
+    .card li {
+      color: var(--muted);
+    }
+
+    .card ul {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .stack-map {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .stack-node {
+      display: grid;
+      align-content: start;
+      min-height: 162px;
+      padding: 14px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      position: relative;
+    }
+
+    .stack-node::after {
+      content: "";
+      position: absolute;
+      top: 48%;
+      right: -9px;
+      width: 8px;
+      height: 8px;
+      border-top: 2px solid #8ca0b4;
+      border-right: 2px solid #8ca0b4;
+      transform: rotate(45deg);
+      background: transparent;
+    }
+
+    .stack-node:last-child::after {
+      display: none;
+    }
+
+    .icon {
+      display: inline-grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      margin-bottom: 10px;
+      color: #ffffff;
+      background: var(--blue);
+      border-radius: 8px;
+      font-weight: 900;
+    }
+
+    .stack-node:nth-child(2) .icon {
+      background: var(--purple);
+    }
+
+    .stack-node:nth-child(3) .icon {
+      background: var(--orange);
+    }
+
+    .stack-node:nth-child(4) .icon {
+      background: var(--teal);
+    }
+
+    .stack-node:nth-child(5) .icon {
+      background: var(--green);
+    }
+
+    .stack-node:nth-child(6) .icon {
+      background: var(--red);
+    }
+
+    .stack-node strong {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 15px;
+    }
+
+    .stack-node span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .pdf-facts {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .fact {
+      min-height: 116px;
+      padding: 14px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .fact b {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--ink);
+    }
+
+    .fact span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .mega-flow {
+      padding: 18px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 18px 42px rgba(31, 41, 51, 0.06);
+      overflow: auto;
+    }
+
+    .flow-titlebar {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .flow-titlebar strong {
+      font-size: 18px;
+    }
+
+    .flow-titlebar span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .mega-grid {
+      display: grid;
+      grid-template-columns: 1.05fr 1.05fr 1.2fr 1.1fr 1.1fr;
+      grid-template-rows: auto auto auto auto;
+      gap: 12px;
+      min-width: 1050px;
+    }
+
+    .mega-node {
+      min-height: 132px;
+      padding: 14px;
+      background: #f8fbff;
+      border: 1px solid #cdd9e6;
+      border-radius: 8px;
+      position: relative;
+    }
+
+    .mega-node h3 {
+      margin-bottom: 7px;
+      font-size: 17px;
+    }
+
+    .mega-node p {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .mega-node small {
+      display: inline-flex;
+      margin-bottom: 8px;
+      padding: 4px 8px;
+      color: #ffffff;
+      background: var(--blue);
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 11px;
+    }
+
+    .mega-node::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: -10px;
+      width: 10px;
+      height: 10px;
+      border-top: 2px solid #8ca0b4;
+      border-right: 2px solid #8ca0b4;
+      transform: translateY(-50%) rotate(45deg);
+      background: transparent;
+    }
+
+    .mega-node.no-arrow::after {
+      display: none;
+    }
+
+    .stakeholder {
+      grid-column: 1;
+      grid-row: 1 / span 4;
+      background: #f1f5ff;
+      border-color: #bfcaf6;
+    }
+
+    .cloud-core {
+      grid-column: 2;
+      grid-row: 1 / span 4;
+      background: #edf7f4;
+      border-color: #b8ddd3;
+    }
+
+    .collabor8 {
+      grid-column: 3;
+      grid-row: 1;
+    }
+
+    .communic8 {
+      grid-column: 3;
+      grid-row: 2;
+    }
+
+    .regul8 {
+      grid-column: 3;
+      grid-row: 3 / span 2;
+      background: #fff8e6;
+      border-color: #e9c46a;
+    }
+
+    .warehouse {
+      grid-column: 4;
+      grid-row: 1;
+    }
+
+    .dbt-models {
+      grid-column: 4;
+      grid-row: 2;
+    }
+
+    .dbt-tests {
+      grid-column: 4;
+      grid-row: 3;
+      background: #fff1f0;
+      border: 2px solid var(--red);
+      box-shadow: 0 0 0 4px rgba(194, 65, 58, 0.08);
+    }
+
+    .dbt-tests small {
+      background: var(--red);
+    }
+
+    .audit-store {
+      grid-column: 4;
+      grid-row: 4;
+    }
+
+    .dashboards {
+      grid-column: 5;
+      grid-row: 1 / span 2;
+      background: #f1fbff;
+      border-color: #b8dfef;
+    }
+
+    .regulator {
+      grid-column: 5;
+      grid-row: 3;
+      background: #f3fff6;
+      border-color: #b9e3c2;
+    }
+
+    .evidence {
+      grid-column: 5;
+      grid-row: 4;
+      background: #f8f3ff;
+      border-color: #d2c3f8;
+    }
+
+    .control-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .control {
+      padding: 10px 12px;
+      color: #34495e;
+      background: #fbfdff;
+      border: 1px dashed #b6c6d6;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    .flow-legend {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .legend-card {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfdff;
+    }
+
+    .legend-card b {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .legend-card span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .where-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .folder {
+      padding: 16px;
+      color: #e5edf6;
+      background: var(--code);
+      border-radius: 8px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 13px;
+      overflow: auto;
+      line-height: 1.6;
+      white-space: pre;
+    }
+
+    .tool-row {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .tool-row:last-child {
+      border-bottom: 0;
+    }
+
+    .tool-row b {
+      color: var(--ink);
+    }
+
+    .tool-row span {
+      color: var(--muted);
+    }
+
+    .note {
+      padding: 14px 16px;
+      color: #22303c;
+      background: #edf7f4;
+      border: 1px solid #bfe2d8;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+
+    .rule-lab {
+      display: grid;
+      grid-template-columns: 250px minmax(0, 1fr);
+      min-height: 620px;
+      overflow: hidden;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .rule-tabs {
+      display: grid;
+      align-content: start;
+      gap: 10px;
+      padding: 18px;
+      background: #eef3f8;
+      border-right: 1px solid var(--line);
+    }
+
+    .rule-btn {
+      display: grid;
+      gap: 4px;
+      width: 100%;
+      min-height: 62px;
+      padding: 10px 12px;
+      color: var(--ink);
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .rule-btn:hover,
+    .rule-btn.active {
+      border-color: #7aa7e9;
+      box-shadow: inset 0 0 0 1px #7aa7e9;
+    }
+
+    .rule-btn strong {
+      font-size: 14px;
+    }
+
+    .rule-btn span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .rule-main {
+      display: grid;
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+      min-width: 0;
+    }
+
+    .rule-explain,
+    .rule-code {
+      min-width: 0;
+      padding: 18px;
+    }
+
+    .rule-explain {
+      border-right: 1px solid var(--line);
+    }
+
+    .rule-explain h3,
+    .rule-code h3 {
+      margin-bottom: 10px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      height: 28px;
+      margin-bottom: 12px;
+      padding: 0 10px;
+      color: #ffffff;
+      background: var(--blue);
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .explain-list {
+      display: grid;
+      gap: 10px;
+      margin: 14px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .explain-list li {
+      display: grid;
+      grid-template-columns: 24px 1fr;
+      gap: 9px;
+      color: var(--muted);
+    }
+
+    .check {
+      display: inline-grid;
+      place-items: center;
+      width: 22px;
+      height: 22px;
+      color: #ffffff;
+      background: var(--teal);
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .code-box,
+    .result-box {
+      min-height: 230px;
+      padding: 14px;
+      color: #d8eaff;
+      background: var(--code2);
+      border-radius: 8px;
+      overflow: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 13px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+    }
+
+    .result-box {
+      min-height: 142px;
+      margin-top: 12px;
+      background: #17212b;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 14px;
+    }
+
+    .phase {
+      display: grid;
+      grid-template-columns: 180px minmax(0, 1fr);
+      gap: 14px;
+      padding: 16px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .phase-time {
+      color: var(--teal);
+      font-weight: 900;
+      font-size: 18px;
+    }
+
+    .phase h3 {
+      margin-bottom: 6px;
+    }
+
+    .phase p {
+      color: var(--muted);
+    }
+
+    .compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .before,
+    .after {
+      padding: 18px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .before {
+      border-top: 5px solid var(--red);
+    }
+
+    .after {
+      border-top: 5px solid var(--green);
+    }
+
+    .before h3,
+    .after h3 {
+      margin-bottom: 12px;
+    }
+
+    .before ul,
+    .after ul {
+      display: grid;
+      gap: 9px;
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+    }
+
+    .interview {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 18px;
+    }
+
+    .script {
+      padding: 18px;
+      color: #e5edf6;
+      background: var(--nav);
+      border-radius: 8px;
+    }
+
+    .script h3 {
+      margin-bottom: 12px;
+      color: #ffffff;
+    }
+
+    .script p {
+      color: #d6e0ea;
+    }
+
+    .simple-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .simple-table th,
+    .simple-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .simple-table th {
+      background: #edf2f7;
+      font-size: 14px;
+    }
+
+    .simple-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .simple-table td {
+      color: var(--muted);
+    }
+
+    .footer {
+      color: #d4dee8;
+      background: var(--nav);
+    }
+
+    .footer .inner {
+      padding: 28px 0;
+    }
+
+    @media (max-width: 1080px) {
+      .page {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+        height: auto;
+      }
+
+      .nav {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .hero,
+      .where-grid,
+      .rule-main,
+      .compare,
+      .interview {
+        grid-template-columns: 1fr;
+      }
+
+      .stack-map {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .stack-node::after {
+        display: none;
+      }
+
+      .pdf-facts,
+      .control-strip,
+      .flow-legend {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .rule-explain {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+    }
+
+    @media (max-width: 760px) {
+      .inner {
+        width: min(100% - 28px, 1180px);
+        padding: 30px 0;
+      }
+
+      .nav,
+      .grid-2,
+      .grid-3,
+      .stack-map,
+      .pdf-facts,
+      .control-strip,
+      .flow-legend,
+      .rule-lab,
+      .phase {
+        grid-template-columns: 1fr;
+      }
+
+      .rule-tabs {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .tool-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <aside class="sidebar">
+      <div class="brand">
+        <strong>dbt SQL Validation</strong>
+        <span>把简历 bullet 拆成真实工作流</span>
+      </div>
+      <nav class="nav" aria-label="页面导航">
+        <a href="#meaning">这句话到底是什么意思</a>
+        <a href="#stack">云端 SaaS 数据流</a>
+        <a href="#platform-flow">PDF 对应大流程图</a>
+        <a href="#where">在哪写、用什么写</a>
+        <a href="#rules">验证规则示例</a>
+        <a href="#deployment">怎么部署运行</a>
+        <a href="#audit">为什么能省时间</a>
+        <a href="#interview">面试讲法</a>
+      </nav>
+    </aside>
+
+    <main>
+      <section class="band" id="meaning">
+        <div class="inner hero">
+          <div>
+            <p class="eyebrow">Data Analyst | Co-evolves</p>
+            <h1>第二个 bullet 的真实意思：把审计前的数据检查自动化</h1>
+            <p class="lead">
+              这句话不是说“写了几条 SQL”。更准确地说，是你把保险监管报表需要的数据质量规则，写进 dbt 项目里，让它们可以自动运行、自动失败提醒、自动留下证据。这样审计准备从人工逐条检查，变成运行一组标准化 validation jobs。
+            </p>
+            <div class="bullet-card">
+              <strong>简历原句</strong>
+              Built and optimized complex SQL validation scripts in DBT to ensure data integrity for mandatory regulatory reporting, reducing compliance audit preparation time from weeks to hours.
+            </div>
+          </div>
+
+          <div class="hero-visual">
+            <div class="mini-window" aria-label="dbt 运行结果示意">
+              <div class="window-top">
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+              </div>
+              <div class="window-body">
+                <div><span class="cmd">$</span> dbt build --select tag:regulatory_report</div>
+                <div class="ok">PASS  not_null_policy_id</div>
+                <div class="ok">PASS  premium_reconciles_to_ledger</div>
+                <div class="fail">FAIL  duplicate_policy_transaction_check</div>
+                <div class="ok">PASS  valid_province_tax_mapping</div>
+                <div>Result: 31 tests passed, 1 failed, failed rows exported</div>
+              </div>
+            </div>
+            <p class="caption">
+              dbt validation 的核心：把“人工会检查的规则”变成可以重复运行的 SQL tests。
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="band alt">
+        <div class="inner">
+          <div class="section-head">
+            <h2>先把关键词翻译成人话</h2>
+            <p>这条 bullet 里面有几个词看起来很技术，其实可以拆成很清楚的工作动作。</p>
+          </div>
+
+          <div class="grid-3">
+            <div class="card">
+              <h3>SQL validation scripts</h3>
+              <p>用 SQL 写的数据检查规则。比如保费不能为空、保单号不能重复、税费加总要等于报表总额、取消保单的金额方向要正确。</p>
+            </div>
+            <div class="card">
+              <h3>dbt</h3>
+              <p>一个数据工程工具。它让你把 SQL 组织成项目，定义依赖关系，运行模型和测试，并生成日志、文档和失败结果。</p>
+            </div>
+            <div class="card">
+              <h3>Regulatory reporting</h3>
+              <p>监管报表。保险公司或保险 SaaS 平台需要按规定提交准确数据，例如保费、保单、broker、地区、税费和交易类型。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="band" id="stack">
+        <div class="inner">
+          <div class="section-head">
+            <h2>在保险 SaaS 公司里，数据通常这样流动</h2>
+            <p>下面是一个典型架构。具体公司可能用 Snowflake、BigQuery、Redshift 或 Postgres，但逻辑通常类似：原始数据进仓库，dbt 负责清洗和验证，最后给监管报表、Tableau 或客户 dashboard 使用。</p>
+          </div>
+
+          <div class="stack-map">
+            <div class="stack-node">
+              <div class="icon">1</div>
+              <strong>Carrier / Broker 数据</strong>
+              <span>保单、quote、premium、claim、broker、policyholder demographics。</span>
+            </div>
+            <div class="stack-node">
+              <div class="icon">2</div>
+              <strong>Ingestion</strong>
+              <span>Python、API、SFTP、scheduled jobs 把数据加载进云端。</span>
+            </div>
+            <div class="stack-node">
+              <div class="icon">3</div>
+              <strong>Raw Warehouse</strong>
+              <span>云数据仓库保存原始表，例如 raw_policy_transactions。</span>
+            </div>
+            <div class="stack-node">
+              <div class="icon">4</div>
+              <strong>dbt Models</strong>
+              <span>用 SQL 清洗、标准化字段、建 staging/intermediate/mart 表。</span>
+            </div>
+            <div class="stack-node">
+              <div class="icon">5</div>
+              <strong>dbt Tests</strong>
+              <span>自动验证完整性、一致性、业务规则、监管口径。</span>
+            </div>
+            <div class="stack-node">
+              <div class="icon">6</div>
+              <strong>Reporting / Audit</strong>
+              <span>监管报表、Tableau dashboard、失败记录、审计证据包。</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="band alt" id="platform-flow">
+        <div class="inner">
+          <div class="section-head">
+            <h2>读完 CoEvolves PDF 后，对应到这张大流程图</h2>
+            <p>PDF 里强调的是一个 cloud-based SaaS insurance platform，连接 P&C insurers、agents、brokers、policyholders 和 regulators。你的第二条 bullet 最贴近其中的 `Regul8`：专门管理和交付 P&C regulatory reporting 的数据平台。</p>
+          </div>
+
+          <div class="pdf-facts">
+            <div class="fact">
+              <b>Regul8</b>
+              <span>PDF 说它是面向 P&C insurers 的 turnkey regulatory reporting data platform。</span>
+            </div>
+            <div class="fact">
+              <b>Collabor8</b>
+              <span>负责 agents、customers、insurance companies 之间的实时互动和 real-time data sync。</span>
+            </div>
+            <div class="fact">
+              <b>Communic8</b>
+              <span>CRM 和 data integration hub，连接 insurance systems 和 third-party providers。</span>
+            </div>
+            <div class="fact">
+              <b>为什么 weeks to hours</b>
+              <span>PDF 的 testimonial 也强调 regulatory reporting 从 weeks 变成 hours，这和 dbt 自动验证逻辑吻合。</span>
+            </div>
+          </div>
+
+          <div class="mega-flow" aria-label="CoEvolves SaaS 平台到 dbt validation 的大流程图">
+            <div class="flow-titlebar">
+              <strong>CoEvolves 平台数据流：从保险业务数据到监管报表审计证据</strong>
+              <span>红色框就是你的简历 bullet 核心贡献位置</span>
+            </div>
+
+            <div class="mega-grid">
+              <div class="mega-node stakeholder">
+                <small>外部参与者</small>
+                <h3>P&C insurance ecosystem</h3>
+                <p>Insurers、agents、brokers、policyholders、regulators 都在产生或消费数据。这里会出现保单、保费、broker retention、policyholder demographics、监管口径等信息。</p>
+              </div>
+
+              <div class="mega-node cloud-core">
+                <small>CoEvolves SaaS core</small>
+                <h3>Cloud native platform</h3>
+                <p>PDF 强调 cloud-based SaaS、automatic updates、no on-premise infrastructure、enterprise-grade infrastructure、SOC 2、role-based access controls。数据不会停在个人电脑，而是在云端产品链路中处理。</p>
+              </div>
+
+              <div class="mega-node collabor8">
+                <small>Collabor8</small>
+                <h3>实时协作与数据同步</h3>
+                <p>Agents、customers、insurance companies 之间的互动会产生业务事件，例如 quote update、policy change、broker activity。这些事件进入后续数据平台。</p>
+              </div>
+
+              <div class="mega-node communic8">
+                <small>Communic8</small>
+                <h3>CRM + integration hub</h3>
+                <p>连接 insurance systems 和 third-party providers，整合客户沟通、第三方数据、系统同步结果，为 analytics 和 reporting 提供上下文。</p>
+              </div>
+
+              <div class="mega-node regul8">
+                <small>Regul8</small>
+                <h3>监管报表数据平台</h3>
+                <p>这是第二条 bullet 最合理的归属：管理 regulatory reporting functionality。你的 SQL validation scripts 用来保证进入监管报表的数据完整、准确、可追溯。</p>
+              </div>
+
+              <div class="mega-node warehouse">
+                <small>Cloud warehouse</small>
+                <h3>Raw / source tables</h3>
+                <p>从 API、SFTP、batch jobs 或产品事件进入 Snowflake / BigQuery / Redshift / Postgres 一类的数据仓库。常见表：policy transactions、premium ledger、broker、province mapping。</p>
+              </div>
+
+              <div class="mega-node dbt-models">
+                <small>dbt models</small>
+                <h3>清洗和建模</h3>
+                <p>用 SQL 建 staging、intermediate、mart。比如统一日期、金额符号、province code、transaction type，然后生成 regulatory premium report mart。</p>
+              </div>
+
+              <div class="mega-node dbt-tests">
+                <small>Your bullet point</small>
+                <h3>dbt SQL validation scripts</h3>
+                <p>写 `not_null`、`unique`、reconciliation、business rule、freshness tests。dbt test 的逻辑是：如果 SQL 返回违规行，就让 job fail 或 warn，并输出 failed rows。</p>
+              </div>
+
+              <div class="mega-node audit-store">
+                <small>Audit layer</small>
+                <h3>失败行 + logs + run artifacts</h3>
+                <p>保存测试结果、失败样本、运行时间戳、Git 版本和修复记录。审计时可以说明每个 regulatory figure 是如何被验证过的。</p>
+              </div>
+
+              <div class="mega-node dashboards no-arrow">
+                <small>Analytics</small>
+                <h3>Dashboards + automated reporting</h3>
+                <p>PDF 提到 real-time analytics、customizable dashboards、automated reporting。验证后的数据可以进入 Tableau 或平台内置 analytics。</p>
+              </div>
+
+              <div class="mega-node regulator no-arrow">
+                <small>Regulators</small>
+                <h3>Mandatory regulatory reporting</h3>
+                <p>输出给监管或内部 compliance 团队的数据必须口径一致、金额可核对、关键字段完整，才能支持 mandatory reporting。</p>
+              </div>
+
+              <div class="mega-node evidence no-arrow">
+                <small>Outcome</small>
+                <h3>Weeks to hours</h3>
+                <p>以前人工准备：导表、抽查、对账、截图、来回确认。自动化后：运行 job，查看失败规则，修复异常，导出证据包。</p>
+              </div>
+            </div>
+
+            <div class="control-strip">
+              <div class="control">SOC 2 / GDPR / RBAC：说明平台是企业级云端产品，不是本地 Excel 流程。</div>
+              <div class="control">24/7 support：失败的 ingestion 或 reporting job 可以进入技术支持流程。</div>
+              <div class="control">Real-time data sync：上游数据更快进入平台，所以 validation 必须自动化。</div>
+              <div class="control">Automated reporting：监管报表不是临时手工拼出来，而是由可重复的数据链路生成。</div>
+            </div>
+          </div>
+
+          <div class="flow-legend">
+            <div class="legend-card">
+              <b>你不是“在 VS Code 里随便写 SQL”</b>
+              <span>VS Code 只是开发入口。真正的价值是把验证规则提交到 dbt project，让云端 job 反复执行。</span>
+            </div>
+            <div class="legend-card">
+              <b>dbt 不等于数据库</b>
+              <span>dbt 把 SQL 发到 cloud warehouse 执行，本身负责项目组织、依赖、测试、文档和运行结果。</span>
+            </div>
+            <div class="legend-card">
+              <b>这条 bullet 的业务价值</b>
+              <span>让 Regul8 里的 regulatory reporting 数据从“人工可信”变成“规则化、可运行、可审计地可信”。</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="band alt" id="where">
+        <div class="inner">
+          <div class="section-head">
+            <h2>到底在哪做？是不是 VS Code extension？</h2>
+            <p>可以在 VS Code 里写，也可以在 dbt Cloud IDE 里写。重点不是 extension，而是代码存放在一个 dbt project 里，连接到云数据仓库，然后由本地命令、CI 或 dbt Cloud job 执行。</p>
+          </div>
+
+          <div class="where-grid">
+            <div>
+              <div class="folder">co-evolves-dbt/
+  dbt_project.yml
+  profiles.yml                 # 本地连接配置，生产环境通常用 secret
+  models/
+    staging/
+      stg_policy_transactions.sql
+      stg_policy_transactions.yml
+    intermediate/
+      int_premium_by_policy.sql
+    marts/
+      regulatory/
+        fct_regulatory_premium_report.sql
+        fct_regulatory_premium_report.yml
+  tests/
+    assert_premium_reconciles_to_ledger.sql
+    assert_no_duplicate_policy_transaction.sql
+    assert_valid_province_tax_mapping.sql
+  macros/
+    test_row_count_within_tolerance.sql
+  snapshots/
+    snap_policy_status.sql
+  analyses/
+    audit_failure_investigation.sql</div>
+            </div>
+
+            <div class="card">
+              <h3>工具怎么分工</h3>
+              <div class="tool-row">
+                <b>VS Code</b>
+                <span>写 SQL、YAML、macro。可以装 dbt Power User、SQLFluff、Snowflake/BigQuery 插件，但插件只是提高效率，不是必须。</span>
+              </div>
+              <div class="tool-row">
+                <b>dbt CLI / dbt Cloud</b>
+                <span>真正运行模型和测试，例如 `dbt build`、`dbt test`、scheduled job、生成 docs。</span>
+              </div>
+              <div class="tool-row">
+                <b>GitHub / GitLab</b>
+                <span>存代码、开 pull request、code review、CI 检查。SaaS 公司通常不会只把 SQL 放在个人电脑。</span>
+              </div>
+              <div class="tool-row">
+                <b>Data Warehouse</b>
+                <span>Snowflake、BigQuery、Redshift 或 Postgres。dbt 不存业务数据，它把 SQL 发到仓库执行。</span>
+              </div>
+              <div class="tool-row">
+                <b>Scheduler</b>
+                <span>dbt Cloud Jobs、Airflow、Dagster 或 GitHub Actions 定时跑，失败时通知 Slack/Email。</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="note" style="margin-top: 18px;">
+            面试里可以这样说：我是在 dbt project 里写 SQL models 和 schema tests，本地用 VS Code 开发并运行 dbt CLI 验证，代码通过 Git PR 合并后，由云端 job 在 warehouse 上定时执行。VS Code extension 只是辅助补全和 linting，不是整个系统的核心。
+          </div>
+        </div>
+      </section>
+
+      <section class="band" id="rules">
+        <div class="inner">
+          <div class="section-head">
+            <h2>SQL validation scripts 具体写了什么</h2>
+            <p>dbt 里的 validation 大概分两类：一类是写在 YAML 里的通用测试，一类是写在 `tests/` 文件夹里的自定义 SQL。点击下面的规则，看它如何对应到真实工作。</p>
+          </div>
+
+          <div class="rule-lab">
+            <div class="rule-tabs">
+              <button class="rule-btn active" data-rule="notNull">
+                <strong>必填字段检查</strong>
+                <span>policy_id、premium、province 不能为空</span>
+              </button>
+              <button class="rule-btn" data-rule="duplicate">
+                <strong>重复交易检查</strong>
+                <span>同一保单交易不能重复入账</span>
+              </button>
+              <button class="rule-btn" data-rule="reconcile">
+                <strong>保费加总核对</strong>
+                <span>明细表总额必须等于 ledger 总额</span>
+              </button>
+              <button class="rule-btn" data-rule="business">
+                <strong>业务规则检查</strong>
+                <span>取消交易、日期、税率口径要合理</span>
+              </button>
+              <button class="rule-btn" data-rule="freshness">
+                <strong>数据新鲜度检查</strong>
+                <span>监管报表不能用过期数据</span>
+              </button>
+            </div>
+
+            <div class="rule-main">
+              <div class="rule-explain">
+                <div class="pill" id="ruleType">YAML generic tests</div>
+                <h3 id="ruleTitle">必填字段检查</h3>
+                <p id="ruleText">
+                  监管报表里最基础的要求是关键字段完整。保单 ID、交易 ID、保费、地区、报表期这些字段如果为空，后面的聚合和审计都会失真。
+                </p>
+                <ul class="explain-list" id="ruleBullets">
+                  <li><span class="check">1</span><span>在 `models/staging/*.yml` 里声明字段规则。</span></li>
+                  <li><span class="check">2</span><span>运行 `dbt test` 后，dbt 自动找出违反规则的行。</span></li>
+                  <li><span class="check">3</span><span>失败结果可导出，交给 ingestion 或业务团队修复。</span></li>
+                </ul>
+              </div>
+
+              <div class="rule-code">
+                <h3>示例代码</h3>
+                <div class="code-box" id="ruleCode"></div>
+                <div class="result-box" id="ruleResult"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="band alt" id="deployment">
+        <div class="inner">
+          <div class="section-head">
+            <h2>从开发到云端部署，发生了哪些事情</h2>
+            <p>这部分回答你最关心的问题：在 SaaS 公司里，它不会只是你电脑上的 SQL 文件，而是会经过开发、review、CI、云端 job、失败通知和审计留痕。</p>
+          </div>
+
+          <div class="timeline">
+            <div class="phase">
+              <div class="phase-time">Step 1</div>
+              <div>
+                <h3>拿到监管口径和数据字典</h3>
+                <p>例如：报表必须按 province、coverage、transaction month 汇总 written premium；取消交易金额必须为负；每条交易必须能追溯到 policy_id 和 broker_id。</p>
+              </div>
+            </div>
+            <div class="phase">
+              <div class="phase-time">Step 2</div>
+              <div>
+                <h3>在 VS Code 或 dbt Cloud IDE 写 dbt models</h3>
+                <p>先建 staging 表统一字段名和类型，再建 intermediate 表处理业务逻辑，最后建 regulatory mart 给报表使用。</p>
+              </div>
+            </div>
+            <div class="phase">
+              <div class="phase-time">Step 3</div>
+              <div>
+                <h3>把人工检查规则写成 dbt tests</h3>
+                <p>简单规则写在 YAML，复杂规则写成 SQL 文件。例如跨表核对、时间窗口完整性、重复交易、汇总金额差异。</p>
+              </div>
+            </div>
+            <div class="phase">
+              <div class="phase-time">Step 4</div>
+              <div>
+                <h3>本地或开发环境先跑</h3>
+                <p>常用命令：`dbt build --select tag:regulatory_report`。它会按依赖顺序运行模型和测试，发现失败行。</p>
+              </div>
+            </div>
+            <div class="phase">
+              <div class="phase-time">Step 5</div>
+              <div>
+                <h3>开 Pull Request，CI 自动验证</h3>
+                <p>同事 review SQL 逻辑，CI 跑 `dbt compile`、`dbt test` 或 slim CI，确保改动不会破坏已有报表。</p>
+              </div>
+            </div>
+            <div class="phase">
+              <div class="phase-time">Step 6</div>
+              <div>
+                <h3>合并后由云端定时运行</h3>
+                <p>dbt Cloud Job、Airflow 或其他 scheduler 在生产 warehouse 运行，失败后通知 Slack/Email，并保存 logs、run artifacts 和 failed rows。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="band" id="audit">
+        <div class="inner">
+          <div class="section-head">
+            <h2>为什么能把 audit prep 从 weeks 变成 hours</h2>
+            <p>真正省时间的地方不只是 SQL 跑得快，而是把“找问题、解释问题、证明已经检查过”这三件事标准化了。</p>
+          </div>
+
+          <div class="compare">
+            <div class="before">
+              <h3>Before：人工准备审计</h3>
+              <ul>
+                <li>从多个表或 Excel 手动导出数据。</li>
+                <li>手动检查空值、重复、金额差异。</li>
+                <li>不同 analyst 可能使用不同查询口径。</li>
+                <li>发现问题后很难定位是哪批数据、哪条规则失败。</li>
+                <li>审计证据要临时整理，截图、Excel、邮件来回确认。</li>
+              </ul>
+            </div>
+
+            <div class="after">
+              <h3>After：dbt 自动化验证</h3>
+              <ul>
+                <li>一条命令或一个云端 job 跑完整套规则。</li>
+                <li>规则版本化，SQL 在 Git 里可追踪。</li>
+                <li>失败行可以直接导出给业务或工程团队修复。</li>
+                <li>每次运行有时间戳、日志、测试结果和失败原因。</li>
+                <li>审计时可以展示规则清单、运行记录和修复记录。</li>
+              </ul>
+            </div>
+          </div>
+
+          <div style="margin-top: 18px;">
+            <table class="simple-table">
+              <thead>
+                <tr>
+                  <th>审计问题</th>
+                  <th>dbt 自动化后怎么回答</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>这个报表的 premium total 是怎么验证的？</td>
+                  <td>有 `assert_premium_reconciles_to_ledger.sql`，每次 regulatory job 都跑，失败行会被记录。</td>
+                </tr>
+                <tr>
+                  <td>有没有重复保单交易？</td>
+                  <td>有 duplicate transaction test，按 policy_id、transaction_id、effective_date 粒度检查。</td>
+                </tr>
+                <tr>
+                  <td>数据是不是最新的？</td>
+                  <td>有 source freshness 或 max loaded_at 检查，超过阈值 job 会失败或 warn。</td>
+                </tr>
+                <tr>
+                  <td>规则是谁改的，什么时候改的？</td>
+                  <td>Git history 和 PR review 记录可以追踪变更。</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="band alt">
+        <div class="inner">
+          <div class="section-head">
+            <h2>“Optimized” 具体可以指什么</h2>
+            <p>简历里写 optimized，不一定是算法优化。对 dbt validation 来说，通常是让测试跑得更快、更稳、更少误报。</p>
+          </div>
+
+          <div class="grid-3">
+            <div class="card">
+              <h3>缩小扫描范围</h3>
+              <p>只验证最近报表期或增量数据，而不是每次扫完整历史表。例如用 `where reporting_month >= current_month - 2`。</p>
+            </div>
+            <div class="card">
+              <h3>减少重复计算</h3>
+              <p>把昂贵的聚合逻辑物化成 intermediate model，多个 tests 共用，避免每条测试重复 join 大表。</p>
+            </div>
+            <div class="card">
+              <h3>设置 severity</h3>
+              <p>关键规则设为 error，轻微波动设为 warn。这样 production job 不会因为非阻断问题频繁失败。</p>
+            </div>
+            <div class="card">
+              <h3>按标签运行</h3>
+              <p>给监管相关模型加 `tag: regulatory_report`，审计前只跑相关链路，速度更快，范围更清楚。</p>
+            </div>
+            <div class="card">
+              <h3>优化 SQL 写法</h3>
+              <p>避免 `select *`，先聚合再 join，减少跨大表明细 join，利用 partition / clustering 字段过滤。</p>
+            </div>
+            <div class="card">
+              <h3>保存失败样本</h3>
+              <p>把失败行写入 audit schema 或导出，排查时不用重新手动定位问题数据。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="band" id="interview">
+        <div class="inner">
+          <div class="section-head">
+            <h2>面试时可以怎么讲</h2>
+            <p>你不需要把每个工具名背得很死。重点是讲清楚业务问题、技术实现、验证规则、部署方式、结果影响。</p>
+          </div>
+
+          <div class="interview">
+            <div class="script">
+              <h3>60 秒版本</h3>
+              <p>
+                I worked on data validation for regulatory reporting in an insurance SaaS environment. The issue was that premium and policy transaction data came from multiple carriers and had to be accurate before reporting. I created dbt models to standardize the raw data and wrote SQL-based dbt tests for completeness, duplicate transactions, premium reconciliation, valid province and tax mappings, and data freshness. I developed the rules in a dbt project using VS Code and dbt CLI, committed them through Git, and had them run in scheduled cloud jobs against the warehouse. The output gave us failed rows, logs, and repeatable audit evidence, which reduced manual audit preparation from weeks to hours.
+              </p>
+            </div>
+
+            <div class="card">
+              <h3>追问时你要能回答的点</h3>
+              <ul>
+                <li>VS Code 是写代码的地方，dbt CLI / dbt Cloud 是运行和调度的地方。</li>
+                <li>dbt test 的本质是 SQL 查询：如果查询返回行，就代表有数据违反规则。</li>
+                <li>云端部署通常通过 Git merge 后触发 CI 或 scheduled dbt job。</li>
+                <li>减少 weeks to hours 的原因是规则可重复运行、失败行自动定位、审计证据自动留下。</li>
+                <li>你可以举一个具体规则：premium 明细合计必须等于 ledger 或监管报表总额。</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <div class="inner">
+          <p>提示：这个页面按保险 SaaS 的常见数据栈还原工作方式。面试时可以说“具体 warehouse / scheduler 取决于团队环境，但我的工作是在 dbt project 中把监管数据质量规则产品化和自动化”。</p>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    const rules = {
+      notNull: {
+        type: "YAML generic tests",
+        title: "必填字段检查",
+        text: "监管报表里最基础的要求是关键字段完整。保单 ID、交易 ID、保费、地区、报表期这些字段如果为空，后面的聚合和审计都会失真。",
+        bullets: [
+          "在 `models/staging/*.yml` 里声明字段规则。",
+          "运行 `dbt test` 后，dbt 自动找出违反规则的行。",
+          "失败结果可导出，交给 ingestion 或业务团队修复。"
+        ],
+        code: `models/staging/stg_policy_transactions.yml
+
+version: 2
+
+models:
+  - name: stg_policy_transactions
+    columns:
+      - name: policy_id
+        tests:
+          - not_null
+      - name: transaction_id
+        tests:
+          - not_null
+          - unique
+      - name: written_premium
+        tests:
+          - not_null
+      - name: province
+        tests:
+          - accepted_values:
+              values: ['ON', 'BC', 'AB', 'QC']`,
+        result: `Possible failure output:
+
+policy_id | transaction_id | written_premium | province
+NULL      | TXN_7781       | 241.50          | ON
+P_1029    | TXN_7782       | NULL            | BC`
+      },
+      duplicate: {
+        type: "Custom SQL test",
+        title: "重复交易检查",
+        text: "保险 premium 数据常来自批量上传或 API ingestion。如果同一 transaction 被重复加载，监管报表的保费总额会被高估。",
+        bullets: [
+          "先定义业务粒度：什么组合算同一笔交易。",
+          "用 group by 检查 count 大于 1 的记录。",
+          "把返回的重复组合交给 pipeline 或 source owner 修复。"
+        ],
+        code: `tests/assert_no_duplicate_policy_transaction.sql
+
+select
+  carrier_id,
+  policy_id,
+  transaction_id,
+  effective_date,
+  count(*) as duplicate_count
+from {{ ref('stg_policy_transactions') }}
+group by 1, 2, 3, 4
+having count(*) > 1`,
+        result: `If this query returns rows, dbt marks the test as failed.
+
+carrier_id | policy_id | transaction_id | effective_date | duplicate_count
+CARR_A     | P_88021   | TXN_10089      | 2025-02-01     | 2`
+      },
+      reconcile: {
+        type: "Custom SQL reconciliation",
+        title: "保费明细与总账核对",
+        text: "监管报表最怕金额口径不一致。这个测试把 transaction-level premium 汇总后，与 ledger 或 final report table 的总额比较。",
+        bullets: [
+          "先在同一 reporting month 和 province 粒度聚合。",
+          "比较明细表总额与 ledger 总额的差异。",
+          "超过 tolerance 的组合才算失败，避免小数四舍五入误报。"
+        ],
+        code: `tests/assert_premium_reconciles_to_ledger.sql
+
+with detail as (
+  select
+    reporting_month,
+    province,
+    sum(written_premium) as detail_premium
+  from {{ ref('fct_policy_premium_transactions') }}
+  group by 1, 2
+),
+ledger as (
+  select
+    reporting_month,
+    province,
+    sum(ledger_premium) as ledger_premium
+  from {{ ref('fct_premium_ledger') }}
+  group by 1, 2
+)
+
+select
+  d.reporting_month,
+  d.province,
+  d.detail_premium,
+  l.ledger_premium,
+  d.detail_premium - l.ledger_premium as difference
+from detail d
+join ledger l using (reporting_month, province)
+where abs(d.detail_premium - l.ledger_premium) > 1.00`,
+        result: `Failure means the report total cannot be trusted yet.
+
+reporting_month | province | detail_premium | ledger_premium | difference
+2025-03         | ON       | 942100.25      | 941812.25      | 288.00`
+      },
+      business: {
+        type: "Business-rule SQL test",
+        title: "保险业务规则检查",
+        text: "不是所有 validation 都是空值和重复。保险数据还需要符合业务常识，例如取消交易金额方向、保单生效日期、税费映射。",
+        bullets: [
+          "把业务规则翻译成 SQL 条件。",
+          "只返回违反规则的行。",
+          "用 severity 区分阻断错误和提醒类问题。"
+        ],
+        code: `tests/assert_valid_cancellation_premium.sql
+
+select
+  policy_id,
+  transaction_id,
+  transaction_type,
+  written_premium
+from {{ ref('stg_policy_transactions') }}
+where transaction_type = 'CANCELLATION'
+  and written_premium > 0`,
+        result: `Cancellation transactions should usually reduce premium.
+
+policy_id | transaction_id | transaction_type | written_premium
+P_44092   | TXN_50112      | CANCELLATION     | 320.00`
+      },
+      freshness: {
+        type: "Source freshness / recency check",
+        title: "数据新鲜度检查",
+        text: "监管报表必须基于最新数据。如果 carrier 昨晚的数据没有加载成功，即使 SQL 逻辑全对，报表也可能是错的。",
+        bullets: [
+          "检查 source 表的 loaded_at 或 batch_date。",
+          "超过阈值后让 job warn 或 fail。",
+          "这能提前发现 ingestion pipeline 中断。"
+        ],
+        code: `models/sources.yml
+
+version: 2
+
+sources:
+  - name: carrier_raw
+    database: raw
+    schema: insurance
+    tables:
+      - name: policy_transactions
+        loaded_at_field: loaded_at
+        freshness:
+          warn_after: {count: 12, period: hour}
+          error_after: {count: 24, period: hour}
+
+# Command:
+# dbt source freshness --select source:carrier_raw.policy_transactions`,
+        result: `Freshness failure example:
+
+source freshness: carrier_raw.policy_transactions
+max_loaded_at: 2025-05-08 01:10:00
+status: error
+reason: source data is older than 24 hours`
+      }
+    };
+
+    const ruleButtons = document.querySelectorAll(".rule-btn");
+    const ruleType = document.getElementById("ruleType");
+    const ruleTitle = document.getElementById("ruleTitle");
+    const ruleText = document.getElementById("ruleText");
+    const ruleBullets = document.getElementById("ruleBullets");
+    const ruleCode = document.getElementById("ruleCode");
+    const ruleResult = document.getElementById("ruleResult");
+
+    function renderRule(name) {
+      const rule = rules[name];
+      ruleButtons.forEach((button) => {
+        button.classList.toggle("active", button.dataset.rule === name);
+      });
+      ruleType.textContent = rule.type;
+      ruleTitle.textContent = rule.title;
+      ruleText.textContent = rule.text;
+      ruleBullets.innerHTML = "";
+      rule.bullets.forEach((item, index) => {
+        const li = document.createElement("li");
+        const number = document.createElement("span");
+        number.className = "check";
+        number.textContent = index + 1;
+        const text = document.createElement("span");
+        text.textContent = item;
+        li.appendChild(number);
+        li.appendChild(text);
+        ruleBullets.appendChild(li);
+      });
+      ruleCode.textContent = rule.code;
+      ruleResult.textContent = rule.result;
+    }
+
+    ruleButtons.forEach((button) => {
+      button.addEventListener("click", () => renderRule(button.dataset.rule));
+    });
+
+    renderRule("notNull");
+  </script>
+</body>
+</html>

@@ -1,0 +1,1325 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>REST API 从零开始</title>
+  <style>
+    :root {
+      --ink: #1f2933;
+      --muted: #5f6f81;
+      --line: #d8e0e8;
+      --paper: #ffffff;
+      --wash: #f5f7fa;
+      --blue: #2563eb;
+      --green: #11845b;
+      --orange: #c05621;
+      --red: #c2413a;
+      --teal: #0f766e;
+      --violet: #6d5bd0;
+      --code: #111827;
+      --code-soft: #1f2937;
+      --yellow: #f7c948;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--wash);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+      line-height: 1.65;
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: 260px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+      padding: 24px 20px;
+      color: #e8eef6;
+      background: #22303c;
+      border-right: 1px solid #111827;
+    }
+
+    .brand {
+      display: grid;
+      gap: 4px;
+      margin-bottom: 26px;
+    }
+
+    .brand strong {
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .brand span {
+      color: #b9c6d3;
+      font-size: 13px;
+    }
+
+    .nav {
+      display: grid;
+      gap: 8px;
+    }
+
+    .nav a {
+      color: #e8eef6;
+      text-decoration: none;
+      padding: 9px 10px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .nav a:hover {
+      background: #2e4152;
+      border-color: #46596b;
+    }
+
+    .content {
+      min-width: 0;
+    }
+
+    .band {
+      border-bottom: 1px solid var(--line);
+      background: var(--paper);
+    }
+
+    .band.alt {
+      background: #fbfcfe;
+    }
+
+    .inner {
+      width: min(1160px, calc(100vw - 64px));
+      margin: 0 auto;
+      padding: 42px 0;
+    }
+
+    .intro {
+      display: grid;
+      grid-template-columns: minmax(0, 0.95fr) minmax(320px, 1.05fr);
+      gap: 34px;
+      align-items: center;
+      min-height: 82vh;
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--teal);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      line-height: 1.18;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      max-width: 720px;
+      font-size: clamp(34px, 5.2vw, 64px);
+    }
+
+    h2 {
+      font-size: clamp(26px, 3vw, 38px);
+    }
+
+    h3 {
+      font-size: 20px;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    .lead {
+      max-width: 680px;
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    .plain-list {
+      display: grid;
+      gap: 10px;
+      margin: 24px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .plain-list li {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 10px;
+      align-items: start;
+      color: #34495e;
+    }
+
+    .num {
+      display: inline-grid;
+      place-items: center;
+      width: 26px;
+      height: 26px;
+      color: #ffffff;
+      background: var(--blue);
+      border-radius: 50%;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .analogy {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      padding: 18px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 18px 45px rgba(31, 41, 51, 0.08);
+    }
+
+    .counter {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      gap: 10px;
+      align-items: center;
+      min-height: 164px;
+    }
+
+    .role {
+      min-height: 144px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfe;
+    }
+
+    .role .symbol {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      margin-bottom: 10px;
+      color: #ffffff;
+      background: var(--teal);
+      border-radius: 8px;
+      font-weight: 800;
+    }
+
+    .role:nth-child(3) .symbol {
+      background: var(--orange);
+    }
+
+    .role:nth-child(5) .symbol {
+      background: var(--violet);
+    }
+
+    .role strong {
+      display: block;
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
+
+    .role span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .arrow {
+      color: var(--muted);
+      font-weight: 900;
+      font-size: 28px;
+    }
+
+    .mini-note {
+      padding: 14px 16px;
+      color: #31475d;
+      background: #edf7f4;
+      border: 1px solid #c6e6dc;
+      border-radius: 8px;
+      font-size: 15px;
+    }
+
+    .section-head {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .section-head p {
+      max-width: 860px;
+      color: var(--muted);
+      font-size: 17px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      padding: 18px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .card h3 {
+      margin-bottom: 8px;
+    }
+
+    .card p {
+      color: var(--muted);
+    }
+
+    .definition {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(280px, 0.72fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .big-quote {
+      padding: 24px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-left: 6px solid var(--teal);
+      border-radius: 8px;
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    .breakdown {
+      display: grid;
+      gap: 10px;
+      padding: 18px;
+      background: #222f3e;
+      color: #e8eef6;
+      border-radius: 8px;
+    }
+
+    .breakdown code {
+      white-space: normal;
+      overflow-wrap: anywhere;
+      color: #f8fafc;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 15px;
+    }
+
+    .url-parts {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .url-part {
+      padding: 9px;
+      background: #31475d;
+      border: 1px solid #52677d;
+      border-radius: 6px;
+    }
+
+    .url-part b {
+      display: block;
+      color: #ffffff;
+      font-size: 13px;
+    }
+
+    .url-part span {
+      color: #c9d6e2;
+      font-size: 12px;
+    }
+
+    .method-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .method-card {
+      min-height: 178px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    .verb {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 74px;
+      height: 34px;
+      margin-bottom: 12px;
+      color: #ffffff;
+      border-radius: 6px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .get {
+      background: var(--green);
+    }
+
+    .post {
+      background: var(--blue);
+    }
+
+    .put {
+      background: var(--orange);
+    }
+
+    .delete {
+      background: var(--red);
+    }
+
+    .method-card strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 17px;
+    }
+
+    .method-card span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .lab {
+      display: grid;
+      grid-template-columns: 230px minmax(0, 1fr);
+      min-height: 560px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .lab-controls {
+      display: grid;
+      align-content: start;
+      gap: 10px;
+      padding: 18px;
+      background: #f0f4f8;
+      border-right: 1px solid var(--line);
+    }
+
+    .method-button {
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      gap: 10px;
+      align-items: center;
+      width: 100%;
+      min-height: 56px;
+      padding: 10px;
+      color: var(--ink);
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .method-button:hover,
+    .method-button.active {
+      border-color: #7aa7e9;
+      box-shadow: inset 0 0 0 1px #7aa7e9;
+    }
+
+    .method-button small {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.3;
+    }
+
+    .lab-main {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      min-width: 0;
+    }
+
+    .request-bar {
+      display: grid;
+      grid-template-columns: 94px minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      padding: 16px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcfe;
+    }
+
+    .request-method {
+      display: inline-grid;
+      place-items: center;
+      height: 38px;
+      color: #ffffff;
+      border-radius: 6px;
+      font-weight: 800;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+
+    .endpoint {
+      min-width: 0;
+      padding: 9px 11px;
+      color: #22303c;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      overflow-wrap: anywhere;
+    }
+
+    .send {
+      height: 38px;
+      padding: 0 16px;
+      color: #ffffff;
+      background: #22303c;
+      border: 1px solid #22303c;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .send:hover {
+      background: #34495e;
+    }
+
+    .lab-body {
+      display: grid;
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+      gap: 0;
+      min-height: 458px;
+    }
+
+    .explain-panel,
+    .response-panel {
+      padding: 18px;
+      min-width: 0;
+    }
+
+    .explain-panel {
+      border-right: 1px solid var(--line);
+    }
+
+    .explain-panel h3,
+    .response-panel h3 {
+      margin-bottom: 10px;
+    }
+
+    .body-box {
+      min-height: 170px;
+      margin-top: 14px;
+      padding: 14px;
+      color: #e8eef6;
+      background: var(--code);
+      border-radius: 8px;
+      overflow: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 13px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+    }
+
+    .response-box {
+      min-height: 310px;
+      padding: 14px;
+      color: #d8eaff;
+      background: var(--code-soft);
+      border-radius: 8px;
+      overflow: auto;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 13px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      height: 30px;
+      margin-bottom: 10px;
+      padding: 0 10px;
+      color: #153321;
+      background: #d7f4df;
+      border: 1px solid #a7ddb6;
+      border-radius: 6px;
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    .explain-text {
+      color: var(--muted);
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .flow-step {
+      min-height: 154px;
+      padding: 16px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .flow-step b {
+      display: inline-grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      margin-bottom: 10px;
+      color: #ffffff;
+      background: var(--blue);
+      border-radius: 50%;
+    }
+
+    .flow-step strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .flow-step span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .status-card {
+      min-height: 140px;
+      padding: 16px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .status-code {
+      display: inline-grid;
+      place-items: center;
+      min-width: 52px;
+      height: 32px;
+      margin-bottom: 10px;
+      color: #ffffff;
+      background: #22303c;
+      border-radius: 6px;
+      font-weight: 800;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+
+    .status-card p {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .compare-table th,
+    .compare-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .compare-table th {
+      background: #edf2f7;
+      font-size: 14px;
+    }
+
+    .compare-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .compare-table td {
+      color: var(--muted);
+    }
+
+    .highlight {
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .memory {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .memory-card {
+      min-height: 168px;
+      padding: 18px;
+      color: #22303c;
+      background: #fffaf0;
+      border: 1px solid #f3d189;
+      border-radius: 8px;
+    }
+
+    .memory-card:nth-child(2) {
+      background: #edf7f4;
+      border-color: #b8ddd3;
+    }
+
+    .memory-card:nth-child(3) {
+      background: #f1f5ff;
+      border-color: #becbf8;
+    }
+
+    .memory-card:nth-child(4) {
+      background: #fff1f0;
+      border-color: #f0b4af;
+    }
+
+    .memory-card strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 18px;
+    }
+
+    .memory-card span {
+      color: #46596b;
+      font-size: 14px;
+    }
+
+    .footer {
+      padding: 28px 0;
+      color: #c9d6e2;
+      background: #22303c;
+    }
+
+    .footer .inner {
+      padding: 0;
+    }
+
+    @media (max-width: 980px) {
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+        height: auto;
+      }
+
+      .nav {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .intro,
+      .definition,
+      .grid-2,
+      .grid-3,
+      .compare,
+      .lab,
+      .lab-body {
+        grid-template-columns: 1fr;
+      }
+
+      .lab-controls,
+      .explain-panel {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .method-grid,
+      .flow,
+      .status-grid,
+      .memory {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 680px) {
+      .inner {
+        width: min(100% - 28px, 1160px);
+        padding: 30px 0;
+      }
+
+      .nav,
+      .method-grid,
+      .flow,
+      .status-grid,
+      .memory,
+      .counter,
+      .url-parts {
+        grid-template-columns: 1fr;
+      }
+
+      .arrow {
+        transform: rotate(90deg);
+        justify-self: center;
+      }
+
+      .request-bar {
+        grid-template-columns: 1fr;
+      }
+
+      .send {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <strong>REST API 从零开始</strong>
+        <span>给完全没听过 API 的人</span>
+      </div>
+      <nav class="nav" aria-label="页面导航">
+        <a href="#idea">核心直觉</a>
+        <a href="#definition">一句话定义</a>
+        <a href="#methods">四个常用动作</a>
+        <a href="#playground">交互演示</a>
+        <a href="#flow">一次请求会发生什么</a>
+        <a href="#codes">状态码</a>
+        <a href="#memory">记忆卡片</a>
+      </nav>
+    </aside>
+
+    <main class="content">
+      <section class="band" id="idea">
+        <div class="inner intro">
+          <div>
+            <p class="eyebrow">把技术先放慢一点</p>
+            <h1>REST API 就像一个标准化的点餐窗口</h1>
+            <p class="lead">
+              你不用冲进厨房，也不用知道厨师怎么做菜。你只要按菜单说清楚“我要什么”，窗口就会把结果给你。软件之间也是这样：前端、手机 App、网页、后台服务，通过 REST API 用统一规则互相沟通。
+            </p>
+            <ul class="plain-list">
+              <li><span class="num">1</span><span>你是客户端：网页、App、Excel 插件、Python 脚本都可以是客户端。</span></li>
+              <li><span class="num">2</span><span>API 是窗口：它规定你能问什么、怎么问、会得到什么格式的回答。</span></li>
+              <li><span class="num">3</span><span>服务器是厨房：它真正读取数据库、计算结果、保存新数据。</span></li>
+            </ul>
+          </div>
+
+          <div class="analogy" aria-label="点餐类比图">
+            <div class="counter">
+              <div class="role">
+                <div class="symbol">你</div>
+                <strong>客户端</strong>
+                <span>网页或 App 发出请求：我想看订单、创建用户、修改资料。</span>
+              </div>
+              <div class="arrow">→</div>
+              <div class="role">
+                <div class="symbol">API</div>
+                <strong>点餐窗口</strong>
+                <span>检查请求格式，决定把请求交给哪个后台功能。</span>
+              </div>
+              <div class="arrow">→</div>
+              <div class="role">
+                <div class="symbol">库</div>
+                <strong>服务器与数据库</strong>
+                <span>真正处理数据，然后把结果交回给客户端。</span>
+              </div>
+            </div>
+            <p class="mini-note">
+              REST API 的重点不是“高级代码”，而是“约定”。大家都按同一套规则说话，系统之间才不会鸡同鸭讲。
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="band alt" id="definition">
+        <div class="inner">
+          <div class="section-head">
+            <h2>一句话定义</h2>
+            <p>如果你只记一句，记这个就够了。</p>
+          </div>
+
+          <div class="definition">
+            <div class="big-quote">
+              REST API 是一种让软件通过网址和 HTTP 动作来读取、创建、修改、删除资源的沟通规则。
+            </div>
+            <div class="breakdown">
+              <code>GET https://api.shop.com/customers/42/orders</code>
+              <div class="url-parts">
+                <div class="url-part">
+                  <b>GET</b>
+                  <span>动作：我要读取</span>
+                </div>
+                <div class="url-part">
+                  <b>api.shop.com</b>
+                  <span>服务器地址</span>
+                </div>
+                <div class="url-part">
+                  <b>/customers/42</b>
+                  <span>第 42 号客户</span>
+                </div>
+                <div class="url-part">
+                  <b>/orders</b>
+                  <span>客户的订单资源</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-3" style="margin-top: 18px;">
+            <div class="card">
+              <h3>REST</h3>
+              <p>一种设计风格，强调用清楚的网址表示资源，用固定 HTTP 动作表示操作。</p>
+            </div>
+            <div class="card">
+              <h3>API</h3>
+              <p>Application Programming Interface，软件给其他软件使用的接口。</p>
+            </div>
+            <div class="card">
+              <h3>资源</h3>
+              <p>系统里的一个东西，例如用户、订单、商品、文章、评论、模型预测结果。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="band" id="methods">
+        <div class="inner">
+          <div class="section-head">
+            <h2>REST API 最常见的四个动作</h2>
+            <p>REST API 通常把“你想做什么”放进 HTTP 方法里。你可以把它们理解成数据库操作的日常语言版本。</p>
+          </div>
+
+          <div class="method-grid">
+            <div class="method-card">
+              <div class="verb get">GET</div>
+              <strong>读取</strong>
+              <span>查看已有数据。例如：查看所有客户、查看某个订单。</span>
+            </div>
+            <div class="method-card">
+              <div class="verb post">POST</div>
+              <strong>创建</strong>
+              <span>新增一条数据。例如：创建新客户、提交新订单。</span>
+            </div>
+            <div class="method-card">
+              <div class="verb put">PUT</div>
+              <strong>更新</strong>
+              <span>修改已有数据。例如：更新客户电话、修改订单状态。</span>
+            </div>
+            <div class="method-card">
+              <div class="verb delete">DELETE</div>
+              <strong>删除</strong>
+              <span>移除一条数据。例如：删除草稿、取消一条记录。</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="band alt" id="playground">
+        <div class="inner">
+          <div class="section-head">
+            <h2>动手看一次 REST API</h2>
+            <p>点击左边不同动作，观察请求、解释和响应如何变化。这里用“任务清单”做例子，因为任务就是一种资源。</p>
+          </div>
+
+          <div class="lab">
+            <div class="lab-controls" aria-label="HTTP 方法按钮">
+              <button class="method-button active" data-demo="get">
+                <span class="verb get">GET</span>
+                <span>读取任务<small>看服务器里有什么</small></span>
+              </button>
+              <button class="method-button" data-demo="post">
+                <span class="verb post">POST</span>
+                <span>创建任务<small>把新内容交给服务器</small></span>
+              </button>
+              <button class="method-button" data-demo="put">
+                <span class="verb put">PUT</span>
+                <span>更新任务<small>改掉已有内容</small></span>
+              </button>
+              <button class="method-button" data-demo="delete">
+                <span class="verb delete">DELETE</span>
+                <span>删除任务<small>让服务器移除资源</small></span>
+              </button>
+            </div>
+
+            <div class="lab-main">
+              <div class="request-bar">
+                <div class="request-method get" id="requestMethod">GET</div>
+                <div class="endpoint" id="endpoint">/api/tasks</div>
+                <button class="send" id="sendButton">发送请求</button>
+              </div>
+
+              <div class="lab-body">
+                <div class="explain-panel">
+                  <h3 id="demoTitle">读取任务列表</h3>
+                  <p class="explain-text" id="demoExplain">
+                    客户端向服务器说：“请把任务列表给我。”GET 通常不会改变服务器数据，只是读取。
+                  </p>
+                  <div class="body-box" id="requestBody">Request Body: 空
+
+Headers:
+Accept: application/json</div>
+                </div>
+
+                <div class="response-panel">
+                  <h3>服务器响应</h3>
+                  <div class="status" id="status">200 OK</div>
+                  <div class="response-box" id="responseBox">{
+  "tasks": [
+    {
+      "id": 1,
+      "title": "学习 REST API",
+      "done": false
+    },
+    {
+      "id": 2,
+      "title": "完成保险项目讲解",
+      "done": true
+    }
+  ]
+}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="band" id="flow">
+        <div class="inner">
+          <div class="section-head">
+            <h2>一次 API 请求背后发生了什么</h2>
+            <p>当你在网页上点一个按钮时，看起来只是页面变化了。实际背后通常经历了下面这些步骤。</p>
+          </div>
+
+          <div class="flow">
+            <div class="flow-step">
+              <b>1</b>
+              <strong>用户触发动作</strong>
+              <span>比如点击“查看订单”或“保存资料”。</span>
+            </div>
+            <div class="flow-step">
+              <b>2</b>
+              <strong>客户端发请求</strong>
+              <span>带上方法、网址、必要参数和身份信息。</span>
+            </div>
+            <div class="flow-step">
+              <b>3</b>
+              <strong>API 接收请求</strong>
+              <span>检查你有没有权限、格式对不对、资源存不存在。</span>
+            </div>
+            <div class="flow-step">
+              <b>4</b>
+              <strong>服务器处理数据</strong>
+              <span>查询数据库、计算结果、创建或修改记录。</span>
+            </div>
+            <div class="flow-step">
+              <b>5</b>
+              <strong>返回响应</strong>
+              <span>给出状态码和 JSON 数据，客户端再展示给用户。</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="band alt" id="codes">
+        <div class="inner">
+          <div class="section-head">
+            <h2>状态码就是服务器的简短回复</h2>
+            <p>REST API 不只返回数据，还会返回状态码。状态码让客户端快速知道“这次请求成功了吗，如果失败，为什么失败”。</p>
+          </div>
+
+          <div class="status-grid">
+            <div class="status-card">
+              <div class="status-code">200</div>
+              <h3>成功</h3>
+              <p>请求正常完成，常见于 GET 或 PUT。</p>
+            </div>
+            <div class="status-card">
+              <div class="status-code">201</div>
+              <h3>已创建</h3>
+              <p>新资源创建成功，常见于 POST。</p>
+            </div>
+            <div class="status-card">
+              <div class="status-code">400</div>
+              <h3>请求有问题</h3>
+              <p>参数格式错了，服务器看不懂。</p>
+            </div>
+            <div class="status-card">
+              <div class="status-code">401</div>
+              <h3>未登录</h3>
+              <p>需要身份验证，例如 token 过期。</p>
+            </div>
+            <div class="status-card">
+              <div class="status-code">404</div>
+              <h3>找不到</h3>
+              <p>请求的资源不存在，例如任务 999 不存在。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="band" id="compare">
+        <div class="inner">
+          <div class="section-head">
+            <h2>REST API 和普通网页有什么区别</h2>
+            <p>很多初学者会问：既然都是网址，那 API 和网页是不是一样？它们都通过网络访问，但目的不同。</p>
+          </div>
+
+          <div class="compare">
+            <table class="compare-table">
+              <thead>
+                <tr>
+                  <th>普通网页</th>
+                  <th>REST API</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>给人看的页面。</td>
+                  <td>给软件读的数据。</td>
+                </tr>
+                <tr>
+                  <td>返回 HTML、CSS、图片。</td>
+                  <td>常返回 JSON。</td>
+                </tr>
+                <tr>
+                  <td>重点是排版和视觉。</td>
+                  <td>重点是结构清楚、字段稳定。</td>
+                </tr>
+                <tr>
+                  <td>例子：打开购物网站首页。</td>
+                  <td>例子：请求某个商品的价格和库存。</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="card">
+              <h3>一个真实感很强的例子</h3>
+              <p>
+                你在手机 App 点“查看我的订单”。App 不会把整个数据库下载下来，也不会直接进入公司后台数据库。它会请求一个接口，比如
+                <span class="highlight">GET /api/orders?customer_id=42</span>。
+                服务器检查你是谁，然后只返回你的订单数据。App 拿到 JSON 后，再把它排版成你看到的订单列表。
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="band alt" id="memory">
+        <div class="inner">
+          <div class="section-head">
+            <h2>最后用四句话记住 REST API</h2>
+            <p>第一次理解 REST API，不需要把所有技术细节背下来。先把这四句话吃透。</p>
+          </div>
+
+          <div class="memory">
+            <div class="memory-card">
+              <strong>API 是窗口</strong>
+              <span>客户端通过窗口请求数据，不直接碰后台数据库。</span>
+            </div>
+            <div class="memory-card">
+              <strong>URL 找资源</strong>
+              <span>例如 `/tasks/1` 表示第 1 个任务。</span>
+            </div>
+            <div class="memory-card">
+              <strong>方法表动作</strong>
+              <span>GET 读，POST 增，PUT 改，DELETE 删。</span>
+            </div>
+            <div class="memory-card">
+              <strong>JSON 传结果</strong>
+              <span>服务器通常用 JSON 把结构化数据交回给客户端。</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <div class="inner">
+          <p>这个页面是一个入门直觉版。真正写项目时，还会继续学习认证、分页、错误处理、API 文档、版本管理和安全设计。</p>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    const demos = {
+      get: {
+        method: "GET",
+        className: "get",
+        endpoint: "/api/tasks",
+        title: "读取任务列表",
+        explain: "客户端向服务器说：“请把任务列表给我。”GET 通常不会改变服务器数据，只是读取。",
+        status: "200 OK",
+        requestBody: `Request Body: 空
+
+Headers:
+Accept: application/json`,
+        response: `{
+  "tasks": [
+    {
+      "id": 1,
+      "title": "学习 REST API",
+      "done": false
+    },
+    {
+      "id": 2,
+      "title": "完成保险项目讲解",
+      "done": true
+    }
+  ]
+}`
+      },
+      post: {
+        method: "POST",
+        className: "post",
+        endpoint: "/api/tasks",
+        title: "创建一个新任务",
+        explain: "客户端向服务器说：“请帮我新增一条任务。”POST 会把请求体里的新数据交给服务器，服务器保存后返回新资源。",
+        status: "201 Created",
+        requestBody: `Request Body:
+{
+  "title": "练习发送 API 请求",
+  "done": false
+}
+
+Headers:
+Content-Type: application/json`,
+        response: `{
+  "id": 3,
+  "title": "练习发送 API 请求",
+  "done": false,
+  "created_at": "2026-06-30T10:30:00"
+}`
+      },
+      put: {
+        method: "PUT",
+        className: "put",
+        endpoint: "/api/tasks/3",
+        title: "更新第 3 个任务",
+        explain: "客户端向服务器说：“第 3 个任务要改成这个样子。”PUT 常用于更新一个已经存在的资源。",
+        status: "200 OK",
+        requestBody: `Request Body:
+{
+  "title": "练习发送 API 请求",
+  "done": true
+}
+
+Headers:
+Content-Type: application/json`,
+        response: `{
+  "id": 3,
+  "title": "练习发送 API 请求",
+  "done": true,
+  "updated_at": "2026-06-30T10:45:00"
+}`
+      },
+      delete: {
+        method: "DELETE",
+        className: "delete",
+        endpoint: "/api/tasks/3",
+        title: "删除第 3 个任务",
+        explain: "客户端向服务器说：“请删除第 3 个任务。”DELETE 用来移除指定资源。删除成功后，服务器可能只返回状态码，也可能返回确认信息。",
+        status: "200 OK",
+        requestBody: `Request Body: 空
+
+Headers:
+Authorization: Bearer your_token`,
+        response: `{
+  "message": "Task 3 has been deleted",
+  "deleted_id": 3
+}`
+      }
+    };
+
+    const buttons = document.querySelectorAll(".method-button");
+    const requestMethod = document.getElementById("requestMethod");
+    const endpoint = document.getElementById("endpoint");
+    const demoTitle = document.getElementById("demoTitle");
+    const demoExplain = document.getElementById("demoExplain");
+    const requestBody = document.getElementById("requestBody");
+    const statusEl = document.getElementById("status");
+    const responseBox = document.getElementById("responseBox");
+    const sendButton = document.getElementById("sendButton");
+
+    let currentDemo = "get";
+
+    function renderDemo(name) {
+      const demo = demos[name];
+      currentDemo = name;
+
+      buttons.forEach((button) => {
+        button.classList.toggle("active", button.dataset.demo === name);
+      });
+
+      requestMethod.className = `request-method ${demo.className}`;
+      requestMethod.textContent = demo.method;
+      endpoint.textContent = demo.endpoint;
+      demoTitle.textContent = demo.title;
+      demoExplain.textContent = demo.explain;
+      requestBody.textContent = demo.requestBody;
+      statusEl.textContent = demo.status;
+      responseBox.textContent = demo.response;
+    }
+
+    buttons.forEach((button) => {
+      button.addEventListener("click", () => renderDemo(button.dataset.demo));
+    });
+
+    sendButton.addEventListener("click", () => {
+      const demo = demos[currentDemo];
+      responseBox.textContent = "发送中...";
+      statusEl.textContent = "Waiting";
+
+      window.setTimeout(() => {
+        statusEl.textContent = demo.status;
+        responseBox.textContent = demo.response;
+      }, 380);
+    });
+  </script>
+</body>
+</html>

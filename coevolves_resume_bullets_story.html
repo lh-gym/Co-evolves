@@ -1,0 +1,1249 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Co-evolves Resume Bullets Explained</title>
+  <style>
+    :root {
+      --ink: #1f2933;
+      --muted: #607183;
+      --paper: #ffffff;
+      --soft: #f4f7fb;
+      --line: #d7e1eb;
+      --nav: #24313f;
+      --blue: #2563eb;
+      --teal: #0f766e;
+      --green: #11845b;
+      --orange: #c05621;
+      --red: #c2413a;
+      --purple: #6655d9;
+      --sky: #f1fbff;
+      --mint: #edf7f4;
+      --cream: #fff8e6;
+      --rose: #fff1f0;
+      --lav: #f6f1ff;
+      --code: #111827;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--soft);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+      line-height: 1.65;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .page {
+      display: grid;
+      grid-template-columns: 286px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+      padding: 24px 20px;
+      color: #edf4fb;
+      background: var(--nav);
+      border-right: 1px solid #17212b;
+    }
+
+    .brand {
+      display: grid;
+      gap: 6px;
+      margin-bottom: 24px;
+    }
+
+    .brand strong {
+      font-size: 20px;
+      line-height: 1.25;
+    }
+
+    .brand span {
+      color: #b8c5d2;
+      font-size: 13px;
+    }
+
+    .nav {
+      display: grid;
+      gap: 8px;
+    }
+
+    .nav a {
+      color: #edf4fb;
+      text-decoration: none;
+      padding: 9px 10px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .nav a:hover {
+      background: #324456;
+      border-color: #4b6075;
+    }
+
+    main {
+      min-width: 0;
+    }
+
+    .band {
+      background: var(--paper);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .band.alt {
+      background: #fbfdff;
+    }
+
+    .inner {
+      width: min(1220px, calc(100vw - 64px));
+      margin: 0 auto;
+      padding: 42px 0;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(360px, 0.95fr);
+      gap: 34px;
+      align-items: center;
+      min-height: 86vh;
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--teal);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      max-width: 840px;
+      font-size: clamp(34px, 5vw, 62px);
+    }
+
+    h2 {
+      font-size: clamp(26px, 3vw, 38px);
+    }
+
+    h3 {
+      font-size: 20px;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    .lead {
+      max-width: 820px;
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    .resume-card {
+      margin-top: 24px;
+      padding: 18px;
+      background: var(--cream);
+      border: 1px solid #e9c46a;
+      border-radius: 8px;
+    }
+
+    .resume-card b {
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .resume-card span {
+      color: #34495e;
+      font-size: 14px;
+    }
+
+    .hero-panel {
+      display: grid;
+      gap: 14px;
+      padding: 18px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 18px 45px rgba(31, 41, 51, 0.08);
+    }
+
+    .platform-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .platform-row {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 10px;
+      align-items: center;
+      padding: 10px;
+      background: #fbfdff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .platform-row b {
+      display: inline-grid;
+      place-items: center;
+      min-height: 34px;
+      color: #ffffff;
+      background: var(--blue);
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    .platform-row:nth-child(2) b {
+      background: var(--teal);
+    }
+
+    .platform-row:nth-child(3) b {
+      background: var(--orange);
+    }
+
+    .platform-row:nth-child(4) b {
+      background: var(--purple);
+    }
+
+    .platform-row span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .section-head {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .section-head p {
+      max-width: 930px;
+      color: var(--muted);
+      font-size: 17px;
+    }
+
+    .grid-2,
+    .grid-3,
+    .grid-5 {
+      display: grid;
+      gap: 18px;
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .grid-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .grid-5 {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    .card {
+      min-width: 0;
+      padding: 18px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .card h3 {
+      margin-bottom: 8px;
+    }
+
+    .card p,
+    .card li {
+      color: var(--muted);
+    }
+
+    .card ul {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .check-card {
+      min-height: 188px;
+      padding: 18px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .check-card b {
+      display: inline-grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      margin-bottom: 10px;
+      color: #ffffff;
+      background: var(--teal);
+      border-radius: 50%;
+    }
+
+    .check-card h3 {
+      margin-bottom: 8px;
+    }
+
+    .check-card p {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .story-flow {
+      padding: 18px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 20px 46px rgba(31, 41, 51, 0.07);
+      overflow: auto;
+    }
+
+    .story-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      padding-bottom: 14px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .story-head strong {
+      font-size: 18px;
+    }
+
+    .story-head span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .flow-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(155px, 1fr));
+      gap: 10px;
+      min-width: 1160px;
+    }
+
+    .flow-node {
+      min-height: 180px;
+      padding: 14px;
+      background: #f8fbff;
+      border: 1px solid #cdd9e6;
+      border-radius: 8px;
+      position: relative;
+    }
+
+    .flow-node::after {
+      content: "";
+      position: absolute;
+      right: -9px;
+      top: 50%;
+      width: 9px;
+      height: 9px;
+      border-top: 2px solid #8ca0b4;
+      border-right: 2px solid #8ca0b4;
+      transform: translateY(-50%) rotate(45deg);
+      background: transparent;
+    }
+
+    .flow-node.end::after {
+      display: none;
+    }
+
+    .flow-node small {
+      display: inline-flex;
+      margin-bottom: 8px;
+      padding: 4px 8px;
+      color: #ffffff;
+      background: var(--blue);
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 11px;
+    }
+
+    .flow-node h3 {
+      margin-bottom: 7px;
+      font-size: 17px;
+    }
+
+    .flow-node p {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .api {
+      background: var(--lav);
+      border-color: #d2c3f8;
+    }
+
+    .pipe {
+      background: #f1f5ff;
+      border-color: #c3cdf6;
+    }
+
+    .dbt {
+      background: var(--rose);
+      border: 2px solid var(--red);
+      box-shadow: 0 0 0 4px rgba(194, 65, 58, 0.08);
+    }
+
+    .dash {
+      background: var(--sky);
+      border-color: #b7ddeb;
+    }
+
+    .stats {
+      background: var(--cream);
+      border-color: #e9c46a;
+    }
+
+    .outcome {
+      background: var(--mint);
+      border-color: #b8ddd3;
+    }
+
+    .legend {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .legend span {
+      padding: 9px 10px;
+      color: var(--muted);
+      background: #fbfdff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    .bullet-lab {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      min-height: 640px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .bullet-tabs {
+      display: grid;
+      align-content: start;
+      gap: 10px;
+      padding: 18px;
+      background: #eef3f8;
+      border-right: 1px solid var(--line);
+    }
+
+    .bullet-btn {
+      width: 100%;
+      min-height: 72px;
+      padding: 10px 12px;
+      color: var(--ink);
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .bullet-btn:hover,
+    .bullet-btn.active {
+      border-color: #7aa7e9;
+      box-shadow: inset 0 0 0 1px #7aa7e9;
+    }
+
+    .bullet-btn strong {
+      display: block;
+      font-size: 14px;
+    }
+
+    .bullet-btn span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .bullet-main {
+      display: grid;
+      grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+      min-width: 0;
+    }
+
+    .bullet-explain,
+    .bullet-artifact {
+      padding: 18px;
+      min-width: 0;
+    }
+
+    .bullet-explain {
+      border-right: 1px solid var(--line);
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      margin-bottom: 12px;
+      padding: 0 10px;
+      color: #ffffff;
+      background: var(--blue);
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .bullet-explain h3,
+    .bullet-artifact h3 {
+      margin-bottom: 10px;
+    }
+
+    .bullet-text {
+      padding: 14px;
+      background: var(--cream);
+      border: 1px solid #e9c46a;
+      border-radius: 8px;
+      color: #34495e;
+      font-size: 14px;
+      margin-bottom: 14px;
+    }
+
+    .explain-list {
+      display: grid;
+      gap: 9px;
+      margin: 14px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .explain-list li {
+      display: grid;
+      grid-template-columns: 26px 1fr;
+      gap: 9px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .num {
+      display: inline-grid;
+      place-items: center;
+      width: 24px;
+      height: 24px;
+      color: #ffffff;
+      background: var(--teal);
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .artifact-box {
+      min-height: 300px;
+      padding: 14px;
+      color: #d8eaff;
+      background: var(--code);
+      border-radius: 8px;
+      overflow: auto;
+      white-space: pre-wrap;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .artifact-note {
+      margin-top: 12px;
+      padding: 12px 14px;
+      color: #34495e;
+      background: #edf7f4;
+      border: 1px solid #b8ddd3;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .matrix {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .matrix th,
+    .matrix td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .matrix th {
+      background: #edf2f7;
+      font-size: 14px;
+    }
+
+    .matrix td {
+      color: var(--muted);
+    }
+
+    .matrix tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .talk-track {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 18px;
+    }
+
+    .script {
+      padding: 18px;
+      color: #dbe8f4;
+      background: var(--nav);
+      border-radius: 8px;
+    }
+
+    .script h3 {
+      color: #ffffff;
+      margin-bottom: 10px;
+    }
+
+    .script p {
+      color: #dbe8f4;
+    }
+
+    .footer {
+      color: #d4dee8;
+      background: var(--nav);
+    }
+
+    .footer .inner {
+      padding: 28px 0;
+    }
+
+    @media (max-width: 1100px) {
+      .page {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+        height: auto;
+      }
+
+      .nav {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .hero,
+      .grid-2,
+      .bullet-lab,
+      .bullet-main,
+      .talk-track {
+        grid-template-columns: 1fr;
+      }
+
+      .grid-3,
+      .grid-5,
+      .legend {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .bullet-tabs,
+      .bullet-explain {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+    }
+
+    @media (max-width: 720px) {
+      .inner {
+        width: min(100% - 28px, 1220px);
+        padding: 30px 0;
+      }
+
+      .nav,
+      .grid-3,
+      .grid-5,
+      .legend {
+        grid-template-columns: 1fr;
+      }
+
+      .platform-row,
+      .explain-list li {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <aside class="sidebar">
+      <div class="brand">
+        <strong>Co-evolves Bullet Story</strong>
+        <span>把五条简历经历串成一个项目</span>
+      </div>
+      <nav class="nav" aria-label="页面导航">
+        <a href="#overview">整体故事</a>
+        <a href="#consistency">是否打架</a>
+        <a href="#company">公司语境</a>
+        <a href="#flow">大流程图</a>
+        <a href="#bullets">逐条解释</a>
+        <a href="#connections">相互关系</a>
+        <a href="#talk">面试说法</a>
+      </nav>
+    </aside>
+
+    <main>
+      <section class="band" id="overview">
+        <div class="inner hero">
+          <div>
+            <p class="eyebrow">Data Analyst | Co-evolves | Toronto, ON | 2024.09 - 2025.05</p>
+            <h1>这五条 bullet 不是五个散活，而是一条保险 SaaS 数据产品链路</h1>
+            <p class="lead">
+              读完你的简历和 CoEvolves 官网 PDF 后，最合理的串法是：你参与的是一个面向 P&C insurance 的数据平台工作流。上游数据从 carrier、broker、API 和业务系统进入平台；中间用 Python、dbt 和 SQL 保证数据可用可信；下游用 Tableau 和统计分析把数据变成客户能理解、监管能接受、业务能行动的结果。
+            </p>
+            <div class="resume-card">
+              <b>Resume bullets covered in this page</b>
+              <span>Python pipelines, dbt SQL validation, Tableau dashboards, REST API testing, inferential testing / experimental design for renewal probability.</span>
+            </div>
+          </div>
+
+          <div class="hero-panel">
+            <div class="platform-grid">
+              <div class="platform-row">
+                <b>Regul8</b>
+                <span>监管报表数据平台，对应 dbt validation、audit prep、mandatory regulatory reporting。</span>
+              </div>
+              <div class="platform-row">
+                <b>Collabor8</b>
+                <span>agents、customers、insurance companies 的实时互动，对应 broker retention、real-time sync。</span>
+              </div>
+              <div class="platform-row">
+                <b>Communic8</b>
+                <span>CRM 与第三方系统整合，对应 REST API、data integration、customer/policyholder context。</span>
+              </div>
+              <div class="platform-row">
+                <b>Analytics</b>
+                <span>官网 PDF 提到 real-time analytics、dashboards、automated reporting，对应 Tableau 和 renewal analysis。</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="band alt" id="consistency">
+        <div class="inner">
+          <div class="section-head">
+            <h2>1. 这几条 bullet 有没有打架？</h2>
+            <p>不打架。它们讲的是同一个 SaaS 数据链路的不同层级：数据入口、数据处理、数据质量、业务展示、统计解释。</p>
+          </div>
+
+          <div class="grid-5">
+            <div class="check-card">
+              <b>1</b>
+              <h3>API testing</h3>
+              <p>先保证 REST API endpoint 稳定，能拿到结构正确的数据，不会因为 timeout 或 malformed JSON 让 pipeline 崩掉。</p>
+            </div>
+            <div class="check-card">
+              <b>2</b>
+              <h3>Python pipelines</h3>
+              <p>把复杂 insurance premium datasets 自动接入、清洗、批处理，压缩 ingestion 和 processing timeline。</p>
+            </div>
+            <div class="check-card">
+              <b>3</b>
+              <h3>dbt validation</h3>
+              <p>数据进 warehouse 后，用 SQL tests 验证完整性、一致性和监管口径，支撑 Regul8 风格 regulatory reporting。</p>
+            </div>
+            <div class="check-card">
+              <b>4</b>
+              <h3>Tableau dashboards</h3>
+              <p>把通过验证的数据变成客户可视化：premium volumes、broker retention、policy activity。</p>
+            </div>
+            <div class="check-card">
+              <b>5</b>
+              <h3>Inferential tests</h3>
+              <p>在可信数据基础上，分析 policyholder demographics 对 renewal probability 的影响，解释业务驱动因素。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="band" id="company">
+        <div class="inner">
+          <div class="section-head">
+            <h2>2. 结合 CoEvolves 官网/PDF 的公司语境</h2>
+            <p>官网 PDF 的核心定位是“Seamless Digital Connectivity for Insurance”：连接 P&C insurers、agents、brokers、policyholders 和 regulators，并提供 cloud-based SaaS、real-time analytics、automated reporting。</p>
+          </div>
+
+          <div class="grid-3">
+            <div class="card">
+              <h3>公司产品语境</h3>
+              <ul>
+                <li>`Regul8`: regulatory reporting data platform。</li>
+                <li>`Collabor8`: agents、customers、insurance companies 的 real-time data sync。</li>
+                <li>`Communic8`: CRM and data integration hub。</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>你的工作放在哪里</h3>
+              <ul>
+                <li>Regul8: dbt SQL validation + audit prep。</li>
+                <li>Collabor8: broker retention dashboards。</li>
+                <li>Communic8: REST API validation + third-party integration quality。</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>业务价值怎么统一</h3>
+              <ul>
+                <li>更快处理 tier-1 carrier premium data。</li>
+                <li>更可信地交付 regulatory reporting。</li>
+                <li>让客户通过 dashboard 看见运营指标和 renewal drivers。</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="band alt" id="flow">
+        <div class="inner">
+          <div class="section-head">
+            <h2>3. 五条 bullet 的统一大流程图</h2>
+            <p>这张图是你面试时最应该记住的结构。每条 bullet 都能落到一个清楚的位置。</p>
+          </div>
+
+          <div class="story-flow" aria-label="Co-evolves resume bullets end-to-end flow">
+            <div class="story-head">
+              <strong>From raw insurance data to trusted regulatory reporting and retention insights</strong>
+              <span>API + Python + dbt + Tableau + statistics 是同一条链路</span>
+            </div>
+
+            <div class="flow-grid">
+              <div class="flow-node">
+                <small>Company context</small>
+                <h3>P&C SaaS platform</h3>
+                <p>CoEvolves 连接 insurers、agents、brokers、policyholders、regulators。业务对象包括 policy、premium、broker、customer、regulatory report。</p>
+              </div>
+
+              <div class="flow-node api">
+                <small>Bullet 4</small>
+                <h3>REST API validation</h3>
+                <p>用 Postman 和 Python 测 endpoint，处理 timeout、malformed JSON、schema mismatch，保障 integration 稳定。</p>
+              </div>
+
+              <div class="flow-node pipe">
+                <small>Bullet 1</small>
+                <h3>Python data pipelines</h3>
+                <p>把 tier-1 carriers 的 complex insurance premium datasets 自动接入、标准化、批处理，减少人工等待和处理时间。</p>
+              </div>
+
+              <div class="flow-node dbt">
+                <small>Bullet 2</small>
+                <h3>dbt SQL validation</h3>
+                <p>写 dbt tests 检查 policy_id、premium totals、duplicate transactions、province/tax mapping、freshness，支撑 mandatory reporting。</p>
+              </div>
+
+              <div class="flow-node dash">
+                <small>Bullet 3</small>
+                <h3>Tableau dashboards</h3>
+                <p>把 validated marts 展示给客户和 providers，分析 premium volumes、broker retention rates、policy operations。</p>
+              </div>
+
+              <div class="flow-node stats">
+                <small>Bullet 5</small>
+                <h3>Renewal analysis</h3>
+                <p>用 inferential tests 和 experimental design 分析 demographics 对 renewal probability 的影响，找出可行动的 retention drivers。</p>
+              </div>
+
+              <div class="flow-node outcome end">
+                <small>Outcome</small>
+                <h3>Trusted decisions</h3>
+                <p>最后输出 regulatory confidence、client-facing analytics、broker strategy 和 renewal retention insights。</p>
+              </div>
+            </div>
+
+            <div class="legend">
+              <span>API: 数据入口稳定性</span>
+              <span>Python: ingestion / processing automation</span>
+              <span>dbt: regulatory data quality</span>
+              <span>Tableau: client-facing operational analytics</span>
+              <span>Statistics: renewal probability explanation</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="band" id="bullets">
+        <div class="inner">
+          <div class="section-head">
+            <h2>4. 逐条 bullet 讲明白</h2>
+            <p>点击左边每条 bullet，看它具体干了什么、为什么做、产出什么、怎么和其他 bullet 连接。</p>
+          </div>
+
+          <div class="bullet-lab">
+            <div class="bullet-tabs">
+              <button class="bullet-btn active" data-bullet="pipeline">
+                <strong>Python pipelines</strong>
+                <span>premium data ingestion</span>
+              </button>
+              <button class="bullet-btn" data-bullet="dbt">
+                <strong>dbt validation</strong>
+                <span>regulatory reporting integrity</span>
+              </button>
+              <button class="bullet-btn" data-bullet="dashboard">
+                <strong>Tableau dashboards</strong>
+                <span>premium + broker metrics</span>
+              </button>
+              <button class="bullet-btn" data-bullet="api">
+                <strong>REST API testing</strong>
+                <span>Postman + Python reliability</span>
+              </button>
+              <button class="bullet-btn" data-bullet="stats">
+                <strong>Inferential testing</strong>
+                <span>renewal probability drivers</span>
+              </button>
+            </div>
+
+            <div class="bullet-main">
+              <div class="bullet-explain">
+                <div class="pill" id="bulletLayer">Data ingestion layer</div>
+                <h3 id="bulletTitle">Python pipelines</h3>
+                <div class="bullet-text" id="bulletOriginal"></div>
+                <p id="bulletMeaning"></p>
+                <ul class="explain-list" id="bulletSteps"></ul>
+              </div>
+
+              <div class="bullet-artifact">
+                <h3>可能的工作产物</h3>
+                <div class="artifact-box" id="bulletArtifact"></div>
+                <div class="artifact-note" id="bulletConnection"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="band alt" id="connections">
+        <div class="inner">
+          <div class="section-head">
+            <h2>5. 它们之间怎么互相支撑</h2>
+            <p>这张表帮助你避免面试时被问散：每条 bullet 都有上游、下游和业务原因。</p>
+          </div>
+
+          <table class="matrix">
+            <thead>
+              <tr>
+                <th>Bullet</th>
+                <th>上游依赖</th>
+                <th>直接产出</th>
+                <th>下游使用者</th>
+                <th>公司官网语境</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>REST API testing</td>
+                <td>Communic8 / third-party integrations / carrier APIs</td>
+                <td>可靠 endpoint、错误处理、稳定 JSON payload</td>
+                <td>Python pipeline 和 integration jobs</td>
+                <td>data integration hub、real-time connectivity</td>
+              </tr>
+              <tr>
+                <td>Python pipelines</td>
+                <td>API、SFTP、carrier premium files</td>
+                <td>标准化 premium transaction datasets</td>
+                <td>dbt models、Tableau、statistics</td>
+                <td>cloud-based SaaS、enterprise-ready、millions of transactions</td>
+              </tr>
+              <tr>
+                <td>dbt SQL validation</td>
+                <td>warehouse raw/staging tables</td>
+                <td>passed/failed tests、failed rows、audit evidence</td>
+                <td>Regul8 reporting、compliance team</td>
+                <td>regulatory reporting from weeks to hours</td>
+              </tr>
+              <tr>
+                <td>Tableau dashboards</td>
+                <td>validated data marts</td>
+                <td>premium volume、broker retention dashboards</td>
+                <td>providers、operations、client success</td>
+                <td>real-time analytics、customizable dashboards</td>
+              </tr>
+              <tr>
+                <td>Inferential testing</td>
+                <td>curated policyholder + renewal datasets</td>
+                <td>renewal probability drivers by demographic factor</td>
+                <td>pricing, retention, broker strategy</td>
+                <td>AI-powered analytics、policy analytics、retention KPI</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="band" id="talk">
+        <div class="inner">
+          <div class="section-head">
+            <h2>6. 面试时可以怎么串</h2>
+            <p>下面这段是把五条 bullet 讲成一个 coherent story 的版本。</p>
+          </div>
+
+          <div class="talk-track">
+            <div class="script">
+              <h3>English talk track</h3>
+              <p>
+                At Co-evolves, my work sat across the data workflow for a P&C insurance SaaS platform. I helped validate REST API integrations with Postman and Python so carrier and third-party data could be ingested reliably. I then built Python pipelines to automate the ingestion and processing of complex premium datasets from tier-1 carriers. Once the data landed in the warehouse, I wrote dbt SQL validation tests to check completeness, duplicate transactions, premium reconciliation, business rules, and source freshness for mandatory regulatory reporting. The validated data then powered Tableau dashboards for providers to monitor premium volumes and broker retention. On top of the curated data, I ran inferential tests and experimental analysis to identify policyholder demographic factors that influenced renewal probability. So the bullets connect as one flow: reliable data entry, automated processing, trusted validation, client-facing reporting, and analytical insight.
+              </p>
+            </div>
+
+            <div class="card">
+              <h3>中文记忆版</h3>
+              <ul>
+                <li>不是五个散活，是一个保险 SaaS 数据链路。</li>
+                <li>API testing 解决“数据能不能稳定进来”。</li>
+                <li>Python pipeline 解决“数据能不能自动处理”。</li>
+                <li>dbt validation 解决“数据能不能支撑监管报表”。</li>
+                <li>Tableau dashboard 解决“客户能不能看懂运营指标”。</li>
+                <li>inferential testing 解决“为什么有些客户更可能续保”。</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <div class="inner">
+          <p>Note: This page is an interview-safe interpretation based on the resume PDF imported into this folder and the CoEvolves website/PDF description. Where implementation details are not explicitly provided, the design uses common SaaS data-platform patterns.</p>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    const bullets = {
+      pipeline: {
+        layer: "Data ingestion layer",
+        title: "Python pipelines",
+        original: "Developed automated end-to-end data pipelines using Python, compressing the ingestion and processing timeline of complex insurance premium datasets for tier-1 carriers.",
+        meaning: "这条讲的是数据入口和自动化处理。tier-1 carrier 的 premium data 通常体量大、字段复杂、格式可能不一致。你的工作是把手动导入、清洗、校验、加载这套流程变成 Python 自动化 pipeline。",
+        steps: [
+          "读取 carrier premium files 或 API payload。",
+          "标准化字段：policy_id、transaction_id、written_premium、province、broker_id、reporting_month。",
+          "处理数据类型、缺失值、重复记录和批次 metadata。",
+          "把结果写入 cloud warehouse 的 raw / staging tables。",
+          "给 dbt validation、Tableau dashboards 和 renewal analysis 提供可靠输入。"
+        ],
+        artifact: `Possible pipeline structure
+
+extract/
+  fetch_carrier_file.py
+  call_vendor_api.py
+transform/
+  normalize_premium_schema.py
+  clean_transaction_dates.py
+load/
+  write_to_warehouse.py
+monitor/
+  batch_log_table
+  ingestion_status_report
+
+Output table:
+raw.carrier_premium_transactions`,
+        connection: "这条是后面所有 bullet 的地基。没有 pipeline，dbt 没数据可测，dashboard 没数据可看，renewal analysis 也没有干净样本。"
+      },
+      dbt: {
+        layer: "Regulatory quality layer",
+        title: "dbt SQL validation",
+        original: "Built and optimized complex SQL validation scripts in DBT to ensure data integrity for mandatory regulatory reporting, reducing compliance audit preparation time from weeks to hours.",
+        meaning: "这条最贴近 CoEvolves 官网/PDF 里的 Regul8。它讲的是把监管报表前的人工检查变成 dbt 自动化 tests，保证保费、保单、地区、税费、交易类型等关键数据在提交前是可信的。",
+        steps: [
+          "把 Python pipeline 产生的 staging data 建成 dbt models。",
+          "写 generic tests：not_null、unique、accepted_values、relationships。",
+          "写 custom SQL tests：premium reconciliation、duplicate transaction、valid tax/province mapping。",
+          "优化测试范围和 SQL 性能，减少全表扫描和重复计算。",
+          "保存 failed rows、run logs、Git version，形成 audit evidence。"
+        ],
+        artifact: `Example dbt checks
+
+models/staging/stg_policy_transactions.yml
+  - not_null: policy_id
+  - unique: transaction_id
+  - accepted_values: province
+
+tests/assert_premium_reconciles_to_ledger.sql
+  Compare transaction-level premium totals
+  against ledger/reporting totals.
+
+Command:
+dbt build --select tag:regulatory_report`,
+        connection: "这条解释 weeks to hours 最有力：以前审计准备靠人工抽查和 Excel 对账，现在一组 dbt jobs 可以重复跑、自动定位失败行。"
+      },
+      dashboard: {
+        layer: "Client-facing analytics layer",
+        title: "Tableau dashboards",
+        original: "Developed client-facing dashboards in Tableau, enabling providers to visually analyze key operational metrics like premium volumes and broker retention rates.",
+        meaning: "这条讲的是把后台数据产品转化成客户可用的可视化分析。CoEvolves 官网/PDF 提到 real-time analytics、customizable dashboards、automated reporting，这条正好对上。",
+        steps: [
+          "连接经过 dbt validation 的 reporting marts。",
+          "设计 premium volume、policy count、broker retention、region/channel breakdown。",
+          "创建 filter：carrier、province、broker、reporting_month、coverage_type。",
+          "做异常提示：数据缺失、保费波动、broker retention 下滑。",
+          "把 dashboard 给 providers / client stakeholders 用于运营分析。"
+        ],
+        artifact: `Dashboard pages
+
+1. Premium Overview
+   - Written premium by month
+   - Premium by province
+   - Carrier comparison
+
+2. Broker Retention
+   - Retention rate trend
+   - Broker cohort analysis
+   - At-risk broker list
+
+3. Data Quality Status
+   - Last refresh time
+   - dbt test pass rate
+   - Failed rule count`,
+        connection: "dashboard 不能直接接 raw data，否则客户看到的数字可能和监管报表不一致。它应该接 validated marts。"
+      },
+      api: {
+        layer: "Integration reliability layer",
+        title: "REST API testing",
+        original: "Used Postman and Python to test and validate REST API endpoints, writing error-handling logic to automatically catch connection timeouts and malformed JSON payloads.",
+        meaning: "这条讲的是数据入口稳定性。CoEvolves 的 Communic8 和 Collabor8 都强调系统连接、第三方 provider、real-time data sync，所以 API endpoint 的稳定性会直接影响数据 pipeline。",
+        steps: [
+          "用 Postman 手动测试 endpoint：auth、headers、params、response code。",
+          "验证 JSON schema 是否符合 pipeline 预期。",
+          "用 Python requests 加入 retry、timeout、status code check。",
+          "捕获 malformed JSON，避免坏 payload 进入 warehouse。",
+          "把 API failure 写入 log 或 alert，方便 support team 排查。"
+        ],
+        artifact: `Python API guardrail
+
+try:
+    response = requests.get(url, timeout=20)
+    response.raise_for_status()
+    payload = response.json()
+except Timeout:
+    log_error("connection timeout")
+except JSONDecodeError:
+    log_error("malformed JSON payload")
+except HTTPError as e:
+    log_error(f"bad status code: {e}")
+
+validate_schema(payload)
+write_to_raw_zone(payload)`,
+        connection: "这条不是和 pipeline 重复，而是 pipeline 的前置保护层：先保证 API 数据能稳定、正确地进来。"
+      },
+      stats: {
+        layer: "Analytical insight layer",
+        title: "Inferential tests and experimental design",
+        original: "Conducted inferential tests and experimental design to analyze the impact of policyholder demographics, identifying key drivers of renewal probability.",
+        meaning: "这条讲的是从 reporting 走向 decision support。前面几条保证数据可信；这条用可信数据解释业务问题：哪些 policyholder demographics 会影响 renewal probability。",
+        steps: [
+          "定义 renewal outcome：renewed / not renewed，或 renewal probability。",
+          "整理 demographics：age band、province、coverage、risk segment、broker channel。",
+          "设计对照组或分层分析，减少混杂因素影响。",
+          "做统计检验或 logistic regression，识别显著 drivers。",
+          "把结果反馈给 retention strategy、broker management 或 dashboard。"
+        ],
+        artifact: `Analysis design
+
+Outcome:
+  renewed_flag or renewal_probability
+
+Candidate drivers:
+  age_band, province, coverage_type,
+  broker_channel, premium_change,
+  policy_tenure
+
+Methods:
+  chi-square tests
+  t-tests / ANOVA
+  logistic regression
+  controlled cohort comparison
+
+Output:
+  key renewal drivers + confidence intervals`,
+        connection: "这条和 dashboard 也不冲突：dashboard 负责展示发生了什么，inferential testing 负责解释为什么发生。"
+      }
+    };
+
+    const buttons = document.querySelectorAll(".bullet-btn");
+    const bulletLayer = document.getElementById("bulletLayer");
+    const bulletTitle = document.getElementById("bulletTitle");
+    const bulletOriginal = document.getElementById("bulletOriginal");
+    const bulletMeaning = document.getElementById("bulletMeaning");
+    const bulletSteps = document.getElementById("bulletSteps");
+    const bulletArtifact = document.getElementById("bulletArtifact");
+    const bulletConnection = document.getElementById("bulletConnection");
+
+    function renderBullet(name) {
+      const bullet = bullets[name];
+      buttons.forEach((button) => {
+        button.classList.toggle("active", button.dataset.bullet === name);
+      });
+      bulletLayer.textContent = bullet.layer;
+      bulletTitle.textContent = bullet.title;
+      bulletOriginal.textContent = bullet.original;
+      bulletMeaning.textContent = bullet.meaning;
+      bulletArtifact.textContent = bullet.artifact;
+      bulletConnection.textContent = bullet.connection;
+      bulletSteps.innerHTML = "";
+      bullet.steps.forEach((step, index) => {
+        const li = document.createElement("li");
+        const num = document.createElement("span");
+        num.className = "num";
+        num.textContent = index + 1;
+        const text = document.createElement("span");
+        text.textContent = step;
+        li.appendChild(num);
+        li.appendChild(text);
+        bulletSteps.appendChild(li);
+      });
+    }
+
+    buttons.forEach((button) => {
+      button.addEventListener("click", () => renderBullet(button.dataset.bullet));
+    });
+
+    renderBullet("pipeline");
+  </script>
+</body>
+</html>

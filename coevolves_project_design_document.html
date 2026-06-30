@@ -1,0 +1,1567 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CoEvolves Regulatory Reporting Project Design Document</title>
+  <style>
+    :root {
+      --ink: #1f2933;
+      --muted: #607183;
+      --paper: #ffffff;
+      --soft: #f4f7fb;
+      --line: #d7e1eb;
+      --nav: #24313f;
+      --blue: #2563eb;
+      --teal: #0f766e;
+      --green: #11845b;
+      --orange: #c05621;
+      --red: #c2413a;
+      --purple: #6655d9;
+      --code: #111827;
+      --cream: #fff8e6;
+      --sky: #f1fbff;
+      --mint: #edf7f4;
+      --rose: #fff1f0;
+      --lav: #f6f1ff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--soft);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+      line-height: 1.65;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .page {
+      display: grid;
+      grid-template-columns: 286px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+      padding: 24px 20px;
+      color: #edf4fb;
+      background: var(--nav);
+      border-right: 1px solid #17212b;
+    }
+
+    .brand {
+      display: grid;
+      gap: 6px;
+      margin-bottom: 24px;
+    }
+
+    .brand strong {
+      font-size: 20px;
+      line-height: 1.25;
+    }
+
+    .brand span {
+      color: #b8c5d2;
+      font-size: 13px;
+    }
+
+    .nav {
+      display: grid;
+      gap: 8px;
+    }
+
+    .nav a {
+      color: #edf4fb;
+      text-decoration: none;
+      padding: 9px 10px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .nav a:hover {
+      background: #324456;
+      border-color: #4b6075;
+    }
+
+    main {
+      min-width: 0;
+    }
+
+    .band {
+      background: var(--paper);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .band.alt {
+      background: #fbfdff;
+    }
+
+    .inner {
+      width: min(1220px, calc(100vw - 64px));
+      margin: 0 auto;
+      padding: 42px 0;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 0.98fr) minmax(360px, 1.02fr);
+      gap: 34px;
+      align-items: center;
+      min-height: 86vh;
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--teal);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      max-width: 830px;
+      font-size: clamp(34px, 5vw, 62px);
+    }
+
+    h2 {
+      font-size: clamp(26px, 3vw, 38px);
+    }
+
+    h3 {
+      font-size: 20px;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    .lead {
+      max-width: 820px;
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    .doc-meta {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .meta-card {
+      padding: 14px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .meta-card b {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 13px;
+    }
+
+    .meta-card span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .hero-panel {
+      display: grid;
+      gap: 14px;
+      padding: 18px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 18px 45px rgba(31, 41, 51, 0.08);
+    }
+
+    .mini-arch {
+      display: grid;
+      gap: 10px;
+    }
+
+    .mini-row {
+      display: grid;
+      grid-template-columns: 130px 1fr;
+      gap: 10px;
+      align-items: center;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfdff;
+    }
+
+    .mini-label {
+      display: inline-grid;
+      place-items: center;
+      min-height: 34px;
+      color: #ffffff;
+      background: var(--blue);
+      border-radius: 6px;
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    .mini-row:nth-child(2) .mini-label {
+      background: var(--teal);
+    }
+
+    .mini-row:nth-child(3) .mini-label {
+      background: var(--orange);
+    }
+
+    .mini-row:nth-child(4) .mini-label {
+      background: var(--red);
+    }
+
+    .mini-row span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .section-head {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .section-head p {
+      max-width: 930px;
+      color: var(--muted);
+      font-size: 17px;
+    }
+
+    .notice {
+      padding: 16px 18px;
+      color: #22303c;
+      background: var(--cream);
+      border: 1px solid #e9c46a;
+      border-radius: 8px;
+    }
+
+    .grid-2,
+    .grid-3,
+    .grid-4 {
+      display: grid;
+      gap: 18px;
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .grid-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .grid-4 {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .card {
+      min-width: 0;
+      padding: 18px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .card h3 {
+      margin-bottom: 8px;
+    }
+
+    .card p,
+    .card li {
+      color: var(--muted);
+    }
+
+    .card ul {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .kpi {
+      min-height: 150px;
+      padding: 18px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .kpi b {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--blue);
+      font-size: 30px;
+      line-height: 1;
+    }
+
+    .kpi span {
+      display: block;
+      color: var(--ink);
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .kpi p {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .blueprint {
+      padding: 18px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 20px 46px rgba(31, 41, 51, 0.07);
+      overflow: auto;
+    }
+
+    .blueprint-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      padding-bottom: 14px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .blueprint-head strong {
+      font-size: 18px;
+    }
+
+    .blueprint-head span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .lane-grid {
+      display: grid;
+      grid-template-columns: 165px repeat(6, minmax(160px, 1fr));
+      gap: 10px;
+      min-width: 1250px;
+    }
+
+    .lane-title {
+      display: grid;
+      align-items: center;
+      min-height: 112px;
+      padding: 12px;
+      color: #ffffff;
+      background: var(--nav);
+      border-radius: 8px;
+      font-weight: 800;
+    }
+
+    .lane-cell {
+      min-height: 112px;
+      padding: 12px;
+      background: #f8fbff;
+      border: 1px solid #cdd9e6;
+      border-radius: 8px;
+      position: relative;
+    }
+
+    .lane-cell::after {
+      content: "";
+      position: absolute;
+      right: -9px;
+      top: 50%;
+      width: 9px;
+      height: 9px;
+      border-top: 2px solid #8ca0b4;
+      border-right: 2px solid #8ca0b4;
+      transform: translateY(-50%) rotate(45deg);
+      background: transparent;
+    }
+
+    .lane-cell.end::after {
+      display: none;
+    }
+
+    .lane-cell b {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--ink);
+      font-size: 14px;
+    }
+
+    .lane-cell span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .lane-cell.product {
+      background: var(--mint);
+      border-color: #b8ddd3;
+    }
+
+    .lane-cell.data {
+      background: #f1f5ff;
+      border-color: #c3cdf6;
+    }
+
+    .lane-cell.quality {
+      background: var(--rose);
+      border: 2px solid var(--red);
+      box-shadow: 0 0 0 4px rgba(194, 65, 58, 0.08);
+    }
+
+    .lane-cell.reporting {
+      background: var(--sky);
+      border-color: #b7ddeb;
+    }
+
+    .lane-cell.ops {
+      background: var(--lav);
+      border-color: #d1c3f5;
+    }
+
+    .legend {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .legend span {
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfdff;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .context-map {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr 1fr;
+      gap: 14px;
+      align-items: stretch;
+    }
+
+    .context-box {
+      padding: 18px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .context-box.center {
+      border: 2px solid var(--blue);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+    }
+
+    .context-box h3 {
+      margin-bottom: 10px;
+    }
+
+    .context-list {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .context-list li {
+      padding: 9px 10px;
+      color: var(--muted);
+      background: #fbfdff;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .data-model {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(145px, 1fr));
+      gap: 12px;
+      overflow: auto;
+      padding-bottom: 4px;
+    }
+
+    .entity {
+      min-height: 190px;
+      padding: 14px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .entity h3 {
+      margin-bottom: 10px;
+      font-size: 17px;
+    }
+
+    .field-list {
+      display: grid;
+      gap: 6px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .field-list li {
+      padding: 6px 8px;
+      color: var(--muted);
+      background: #f8fbff;
+      border: 1px solid #dce6f0;
+      border-radius: 5px;
+      font-size: 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+
+    .quality-gate {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .gate-stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .gate {
+      display: grid;
+      grid-template-columns: 76px 1fr;
+      gap: 12px;
+      align-items: start;
+      padding: 14px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .gate b {
+      display: inline-grid;
+      place-items: center;
+      min-height: 38px;
+      color: #ffffff;
+      background: var(--teal);
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    .gate:nth-child(2) b {
+      background: var(--orange);
+    }
+
+    .gate:nth-child(3) b {
+      background: var(--red);
+    }
+
+    .gate:nth-child(4) b {
+      background: var(--purple);
+    }
+
+    .gate span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .code-box {
+      padding: 16px;
+      color: #d8eaff;
+      background: var(--code);
+      border-radius: 8px;
+      overflow: auto;
+      white-space: pre-wrap;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: 220px minmax(0, 1fr);
+      min-height: 470px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .tab-buttons {
+      display: grid;
+      align-content: start;
+      gap: 10px;
+      padding: 18px;
+      background: #eef3f8;
+      border-right: 1px solid var(--line);
+    }
+
+    .tab-btn {
+      width: 100%;
+      min-height: 58px;
+      padding: 10px 12px;
+      color: var(--ink);
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .tab-btn.active,
+    .tab-btn:hover {
+      border-color: #7aa7e9;
+      box-shadow: inset 0 0 0 1px #7aa7e9;
+    }
+
+    .tab-btn strong {
+      display: block;
+      font-size: 14px;
+    }
+
+    .tab-btn span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .tab-content {
+      padding: 18px;
+      min-width: 0;
+    }
+
+    .tab-content h3 {
+      margin-bottom: 10px;
+    }
+
+    .tab-content p {
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 14px;
+    }
+
+    .phase {
+      display: grid;
+      grid-template-columns: 170px minmax(0, 1fr) 220px;
+      gap: 14px;
+      padding: 16px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .phase b {
+      color: var(--teal);
+      font-size: 18px;
+    }
+
+    .phase h3 {
+      margin-bottom: 5px;
+    }
+
+    .phase p,
+    .phase span {
+      color: var(--muted);
+    }
+
+    .risk-table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    .risk-table th,
+    .risk-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .risk-table th {
+      background: #edf2f7;
+      font-size: 14px;
+    }
+
+    .risk-table td {
+      color: var(--muted);
+    }
+
+    .risk-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .closeout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 18px;
+    }
+
+    .script {
+      padding: 18px;
+      color: #dbe8f4;
+      background: var(--nav);
+      border-radius: 8px;
+    }
+
+    .script h3 {
+      color: #ffffff;
+      margin-bottom: 10px;
+    }
+
+    .script p {
+      color: #dbe8f4;
+    }
+
+    .footer {
+      color: #d4dee8;
+      background: var(--nav);
+    }
+
+    .footer .inner {
+      padding: 28px 0;
+    }
+
+    @media (max-width: 1100px) {
+      .page {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+        height: auto;
+      }
+
+      .nav {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .hero,
+      .grid-2,
+      .quality-gate,
+      .tabs,
+      .closeout,
+      .context-map {
+        grid-template-columns: 1fr;
+      }
+
+      .grid-3,
+      .grid-4,
+      .doc-meta,
+      .legend {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .tab-buttons {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .phase {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .inner {
+        width: min(100% - 28px, 1220px);
+        padding: 30px 0;
+      }
+
+      .nav,
+      .grid-3,
+      .grid-4,
+      .doc-meta,
+      .legend {
+        grid-template-columns: 1fr;
+      }
+
+      .mini-row,
+      .gate {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <aside class="sidebar">
+      <div class="brand">
+        <strong>Project Design Doc</strong>
+        <span>Regul8-style regulatory data quality project</span>
+      </div>
+      <nav class="nav" aria-label="页面导航">
+        <a href="#overview">项目概览</a>
+        <a href="#requirements">需求定义</a>
+        <a href="#blueprint">落地大图</a>
+        <a href="#architecture">系统架构</a>
+        <a href="#data-model">数据模型</a>
+        <a href="#quality">质量门设计</a>
+        <a href="#operations">上线运维</a>
+        <a href="#roadmap">实施路线</a>
+        <a href="#risks">风险与验收</a>
+        <a href="#story">面试叙述</a>
+      </nav>
+    </aside>
+
+    <main>
+      <section class="band" id="overview">
+        <div class="inner hero">
+          <div>
+            <p class="eyebrow">Design Document | CoEvolves P&C Regulatory Reporting</p>
+            <h1>把保险监管报表数据质量，从人工检查落地成自动化平台能力</h1>
+            <p class="lead">
+              这个设计文档描述一个可落地的数据分析/数据工程项目：在 CoEvolves 的 cloud-based SaaS insurance platform 里，为 Regul8 风格的监管报表链路建立数据 ingestion、warehouse modeling、dbt SQL validation、dashboard 和 audit evidence 的完整工作流。
+            </p>
+            <div class="doc-meta">
+              <div class="meta-card">
+                <b>业务场景</b>
+                <span>P&C insurers regulatory reporting</span>
+              </div>
+              <div class="meta-card">
+                <b>核心成果</b>
+                <span>weeks-to-hours audit preparation</span>
+              </div>
+              <div class="meta-card">
+                <b>你的角色</b>
+                <span>Data Analyst owning SQL validation + reporting logic</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="hero-panel">
+            <div class="mini-arch">
+              <div class="mini-row">
+                <div class="mini-label">PDF context</div>
+                <span>CoEvolves 连接 P&C insurers、agents、brokers、policyholders、regulators。</span>
+              </div>
+              <div class="mini-row">
+                <div class="mini-label">Product fit</div>
+                <span>Regul8 是 regulatory reporting data platform，正好承载这个项目。</span>
+              </div>
+              <div class="mini-row">
+                <div class="mini-label">Tech layer</div>
+                <span>Python/API/SFTP ingestion + cloud warehouse + dbt + Tableau/reporting。</span>
+              </div>
+              <div class="mini-row">
+                <div class="mini-label">Impact</div>
+                <span>把人工抽查和 Excel 对账变成可重复运行、可审计的 validation jobs。</span>
+              </div>
+            </div>
+            <div class="notice">
+              说明：这是根据你提供的 PDF 和简历 bullet 设计的“合理落地方案”。它用于理解和面试表达，不声称等同于公司内部真实架构细节。
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="band alt" id="requirements">
+        <div class="inner">
+          <div class="section-head">
+            <h2>1. 需求定义</h2>
+            <p>项目不是从“我要写 SQL”开始，而是从监管报表和审计痛点开始。先把业务问题定义清楚，后面的技术选择才有方向。</p>
+          </div>
+
+          <div class="grid-4">
+            <div class="kpi">
+              <b>40%</b>
+              <span>平台覆盖影响</span>
+              <p>PDF 提到 Canadian direct written premium managed through platform，说明数据规模和可信度要求高。</p>
+            </div>
+            <div class="kpi">
+              <b>99.9%</b>
+              <span>可靠性目标</span>
+              <p>SaaS 平台需要稳定运行，监管数据链路不能依赖个人电脑和临时查询。</p>
+            </div>
+            <div class="kpi">
+              <b>2 weeks</b>
+              <span>快速 onboarding</span>
+              <p>新 carrier 或新数据源接入后，验证规则必须可复用，不能每次从零手工检查。</p>
+            </div>
+            <div class="kpi">
+              <b>hours</b>
+              <span>审计准备目标</span>
+              <p>目标是把 weeks of audit prep 变成 hours，通过自动测试、失败行和运行记录完成。</p>
+            </div>
+          </div>
+
+          <div class="grid-3" style="margin-top: 18px;">
+            <div class="card">
+              <h3>Functional requirements</h3>
+              <ul>
+                <li>接入 carrier、broker、policy、premium transaction 数据。</li>
+                <li>生成 regulatory premium mart。</li>
+                <li>自动验证关键字段、重复交易、金额核对、数据新鲜度。</li>
+                <li>向 dashboard 和 audit package 输出可信数据。</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>Non-functional requirements</h3>
+              <ul>
+                <li>Cloud native，不依赖本地手动流程。</li>
+                <li>支持 role-based access control。</li>
+                <li>所有规则和变更可追踪。</li>
+                <li>失败时有日志、告警和修复路径。</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>Out of scope</h3>
+              <ul>
+                <li>不重建完整 policy administration system。</li>
+                <li>不直接替代 regulator submission portal。</li>
+                <li>不在 dashboard 里临时修正数据。</li>
+                <li>不把业务规则只保存在个人 SQL 文件。</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="band" id="blueprint">
+        <div class="inner">
+          <div class="section-head">
+            <h2>2. 项目落地大图</h2>
+            <p>下面这张图是整个项目的核心。你可以把它理解成从“业务发生”到“监管报表可信输出”的全链路。</p>
+          </div>
+
+          <div class="blueprint" aria-label="项目落地大图">
+            <div class="blueprint-head">
+              <strong>End-to-end implementation blueprint</strong>
+              <span>红色质量门是你的 Data Analyst 贡献最集中的位置</span>
+            </div>
+
+            <div class="lane-grid">
+              <div class="lane-title">Business users</div>
+              <div class="lane-cell product">
+                <b>Insurers</b>
+                <span>产生保单、保费、claim、broker performance 和客户维度数据。</span>
+              </div>
+              <div class="lane-cell product">
+                <b>Agents / Brokers</b>
+                <span>通过 Collabor8 风格的协作平台产生 quote、policy change、retention signal。</span>
+              </div>
+              <div class="lane-cell product">
+                <b>Policyholders</b>
+                <span>客户 demographic、coverage、renewal behavior 成为分析和报表上下文。</span>
+              </div>
+              <div class="lane-cell product">
+                <b>Compliance team</b>
+                <span>定义监管口径、报表粒度、允许误差和审计证据要求。</span>
+              </div>
+              <div class="lane-cell product">
+                <b>Regulators</b>
+                <span>接收 mandatory regulatory reporting，要求数据准确、可解释、可追溯。</span>
+              </div>
+              <div class="lane-cell product end">
+                <b>Executives</b>
+                <span>查看 premium volume、retention、operational KPI 和 compliance readiness。</span>
+              </div>
+
+              <div class="lane-title">Product modules</div>
+              <div class="lane-cell product">
+                <b>Collabor8</b>
+                <span>实时协作和数据同步入口。</span>
+              </div>
+              <div class="lane-cell product">
+                <b>Communic8</b>
+                <span>CRM 与第三方系统 integration hub。</span>
+              </div>
+              <div class="lane-cell product">
+                <b>Regul8</b>
+                <span>监管报表数据平台，承接 P&C reporting functionality。</span>
+              </div>
+              <div class="lane-cell product">
+                <b>Analytics layer</b>
+                <span>平台内置 analytics 或 Tableau dashboard。</span>
+              </div>
+              <div class="lane-cell product">
+                <b>Audit workspace</b>
+                <span>集中保存 validation results、failed rows、run artifacts。</span>
+              </div>
+              <div class="lane-cell product end">
+                <b>Support workflow</b>
+                <span>失败告警进入 technical support 或 data remediation queue。</span>
+              </div>
+
+              <div class="lane-title">Data platform</div>
+              <div class="lane-cell data">
+                <b>Ingestion</b>
+                <span>Python jobs、REST APIs、SFTP files、scheduled loads。</span>
+              </div>
+              <div class="lane-cell data">
+                <b>Raw zone</b>
+                <span>保留 source 原貌，支持追溯和 reload。</span>
+              </div>
+              <div class="lane-cell data">
+                <b>Staging models</b>
+                <span>字段标准化、类型转换、日期和金额清理。</span>
+              </div>
+              <div class="lane-cell data">
+                <b>Intermediate models</b>
+                <span>policy、premium、broker、province mapping 的业务逻辑整合。</span>
+              </div>
+              <div class="lane-cell data">
+                <b>Mart models</b>
+                <span>fct_regulatory_premium_report 和 dashboard-ready marts。</span>
+              </div>
+              <div class="lane-cell data end">
+                <b>Semantic output</b>
+                <span>统一口径的 metrics、dimensions、reporting periods。</span>
+              </div>
+
+              <div class="lane-title">Quality gates</div>
+              <div class="lane-cell quality">
+                <b>Source freshness</b>
+                <span>检查 carrier 数据是否按 SLA 到达。</span>
+              </div>
+              <div class="lane-cell quality">
+                <b>Completeness</b>
+                <span>policy_id、transaction_id、premium、province 不能为空。</span>
+              </div>
+              <div class="lane-cell quality">
+                <b>Uniqueness</b>
+                <span>同一保单交易不能重复入账。</span>
+              </div>
+              <div class="lane-cell quality">
+                <b>Reconciliation</b>
+                <span>交易明细合计必须对上 ledger 或 report totals。</span>
+              </div>
+              <div class="lane-cell quality">
+                <b>Business rules</b>
+                <span>取消交易金额方向、税率、省份映射、日期窗口必须合理。</span>
+              </div>
+              <div class="lane-cell quality end">
+                <b>Audit evidence</b>
+                <span>保存测试结果、失败行、Git SHA、运行时间和修复记录。</span>
+              </div>
+
+              <div class="lane-title">Reporting outputs</div>
+              <div class="lane-cell reporting">
+                <b>Regulatory extract</b>
+                <span>供 compliance team 复核和提交。</span>
+              </div>
+              <div class="lane-cell reporting">
+                <b>Tableau dashboards</b>
+                <span>premium volume、broker retention、policy activity。</span>
+              </div>
+              <div class="lane-cell reporting">
+                <b>Exception report</b>
+                <span>显示 failed tests、异常金额、缺失字段。</span>
+              </div>
+              <div class="lane-cell reporting">
+                <b>Audit pack</b>
+                <span>导出 rules inventory、run results、failed rows。</span>
+              </div>
+              <div class="lane-cell reporting">
+                <b>Operational metrics</b>
+                <span>SLA、job duration、test pass rate、issue aging。</span>
+              </div>
+              <div class="lane-cell reporting end">
+                <b>Business action</b>
+                <span>修复数据、确认报表、向 regulator 或客户交付。</span>
+              </div>
+
+              <div class="lane-title">Cloud operations</div>
+              <div class="lane-cell ops">
+                <b>Git PR</b>
+                <span>所有 dbt model 和 tests 通过 code review。</span>
+              </div>
+              <div class="lane-cell ops">
+                <b>CI validation</b>
+                <span>dbt compile、dbt build、SQL lint。</span>
+              </div>
+              <div class="lane-cell ops">
+                <b>Scheduled jobs</b>
+                <span>dbt Cloud、Airflow、Dagster 或 GitHub Actions。</span>
+              </div>
+              <div class="lane-cell ops">
+                <b>Monitoring</b>
+                <span>Slack/Email alert、job logs、warehouse query history。</span>
+              </div>
+              <div class="lane-cell ops">
+                <b>Access control</b>
+                <span>SOC 2 / GDPR / RBAC 风格的权限和数据治理。</span>
+              </div>
+              <div class="lane-cell ops end">
+                <b>Continuous improvement</b>
+                <span>根据审计问题新增规则，减少下一轮人工准备。</span>
+              </div>
+            </div>
+
+            <div class="legend">
+              <span>Product: CoEvolves SaaS 产品模块</span>
+              <span>Data: warehouse + dbt modeling</span>
+              <span>Quality: Data Analyst 重点贡献</span>
+              <span>Reporting: 业务和监管输出</span>
+              <span>Ops: 云端部署和治理</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="band alt" id="architecture">
+        <div class="inner">
+          <div class="section-head">
+            <h2>3. 系统架构设计</h2>
+            <p>这一层回答“具体系统怎么分层”。SaaS 项目落地时，前台产品、数据平台、质量控制和报表输出必须解耦。</p>
+          </div>
+
+          <div class="context-map">
+            <div class="context-box">
+              <h3>Upstream systems</h3>
+              <ul class="context-list">
+                <li>Policy administration systems</li>
+                <li>Broker / agent activity feeds</li>
+                <li>CRM and third-party providers</li>
+                <li>Premium ledger and payment systems</li>
+                <li>Regulatory mapping tables</li>
+              </ul>
+            </div>
+
+            <div class="context-box center">
+              <h3>Regulatory Data Quality Service</h3>
+              <ul class="context-list">
+                <li>Ingest raw policy and premium data</li>
+                <li>Transform through dbt staging, intermediate, mart layers</li>
+                <li>Run SQL validation tests as quality gates</li>
+                <li>Publish trusted regulatory mart and audit artifacts</li>
+                <li>Alert owners when quality gate fails</li>
+              </ul>
+            </div>
+
+            <div class="context-box">
+              <h3>Downstream outputs</h3>
+              <ul class="context-list">
+                <li>Regul8 regulatory reporting</li>
+                <li>Tableau operational dashboards</li>
+                <li>Exception management reports</li>
+                <li>Audit evidence package</li>
+                <li>Executive KPI summaries</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="grid-3" style="margin-top: 18px;">
+            <div class="card">
+              <h3>为什么用 dbt</h3>
+              <p>监管报表逻辑需要版本控制、依赖管理、重复运行、测试结果和文档。dbt 把 SQL 从个人查询变成团队可维护的数据产品。</p>
+            </div>
+            <div class="card">
+              <h3>为什么用 cloud warehouse</h3>
+              <p>数据规模可能达到 millions of transactions，本地 Excel 或单机脚本不适合承载生产级监管报表链路。</p>
+            </div>
+            <div class="card">
+              <h3>为什么要 audit layer</h3>
+              <p>审计不是只问“数字是多少”，还会问“你怎么知道它是对的”。audit layer 提供可追溯证据。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="band" id="data-model">
+        <div class="inner">
+          <div class="section-head">
+            <h2>4. 数据模型设计</h2>
+            <p>数据模型的目标是把保险业务对象整理成可验证、可报表、可解释的结构。下面是一个简化版。</p>
+          </div>
+
+          <div class="data-model" aria-label="简化数据模型">
+            <div class="entity">
+              <h3>dim_policy</h3>
+              <ul class="field-list">
+                <li>policy_id PK</li>
+                <li>carrier_id</li>
+                <li>coverage_type</li>
+                <li>effective_date</li>
+                <li>expiry_date</li>
+                <li>policy_status</li>
+              </ul>
+            </div>
+            <div class="entity">
+              <h3>fct_transaction</h3>
+              <ul class="field-list">
+                <li>transaction_id PK</li>
+                <li>policy_id FK</li>
+                <li>transaction_type</li>
+                <li>written_premium</li>
+                <li>tax_amount</li>
+                <li>transaction_date</li>
+              </ul>
+            </div>
+            <div class="entity">
+              <h3>dim_broker</h3>
+              <ul class="field-list">
+                <li>broker_id PK</li>
+                <li>broker_name</li>
+                <li>region</li>
+                <li>channel</li>
+                <li>active_flag</li>
+              </ul>
+            </div>
+            <div class="entity">
+              <h3>dim_customer</h3>
+              <ul class="field-list">
+                <li>policyholder_id PK</li>
+                <li>age_band</li>
+                <li>province</li>
+                <li>risk_segment</li>
+                <li>renewal_flag</li>
+              </ul>
+            </div>
+            <div class="entity">
+              <h3>map_regulatory</h3>
+              <ul class="field-list">
+                <li>province_code</li>
+                <li>tax_rate</li>
+                <li>report_line_code</li>
+                <li>coverage_mapping</li>
+                <li>effective_month</li>
+              </ul>
+            </div>
+            <div class="entity">
+              <h3>fct_reg_report</h3>
+              <ul class="field-list">
+                <li>reporting_month</li>
+                <li>province</li>
+                <li>carrier_id</li>
+                <li>written_premium</li>
+                <li>policy_count</li>
+                <li>validation_status</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="band alt" id="quality">
+        <div class="inner">
+          <div class="section-head">
+            <h2>5. 数据质量门设计</h2>
+            <p>这是第二个简历 bullet 的核心。所谓 SQL validation scripts，就是把下面这些质量门写成 dbt tests。</p>
+          </div>
+
+          <div class="quality-gate">
+            <div class="gate-stack">
+              <div class="gate">
+                <b>Gate 1</b>
+                <span><strong>Freshness:</strong> carrier 数据必须在 SLA 内到达，否则 regulatory report 不能生成。</span>
+              </div>
+              <div class="gate">
+                <b>Gate 2</b>
+                <span><strong>Completeness:</strong> policy_id、transaction_id、premium、province、reporting_month 不允许缺失。</span>
+              </div>
+              <div class="gate">
+                <b>Gate 3</b>
+                <span><strong>Reconciliation:</strong> transaction-level premium sum 必须对上 ledger/report total。</span>
+              </div>
+              <div class="gate">
+                <b>Gate 4</b>
+                <span><strong>Auditability:</strong> 每次运行保存结果、失败行、Git version 和修复状态。</span>
+              </div>
+            </div>
+
+            <div class="code-box">Example dbt custom test
+
+tests/assert_premium_reconciles_to_ledger.sql
+
+with detail as (
+  select
+    reporting_month,
+    province,
+    sum(written_premium) as detail_premium
+  from {{ ref('fct_policy_premium_transactions') }}
+  group by 1, 2
+),
+ledger as (
+  select
+    reporting_month,
+    province,
+    sum(ledger_premium) as ledger_premium
+  from {{ ref('fct_premium_ledger') }}
+  group by 1, 2
+)
+
+select
+  d.reporting_month,
+  d.province,
+  d.detail_premium,
+  l.ledger_premium,
+  d.detail_premium - l.ledger_premium as difference
+from detail d
+join ledger l using (reporting_month, province)
+where abs(d.detail_premium - l.ledger_premium) > 1.00</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="band" id="operations">
+        <div class="inner">
+          <div class="section-head">
+            <h2>6. 上线与运维设计</h2>
+            <p>一个真正落地的 SaaS 数据项目，不能停在 notebook 或本地 SQL。它必须进入 Git、CI、scheduler、monitoring 和 support workflow。</p>
+          </div>
+
+          <div class="tabs">
+            <div class="tab-buttons">
+              <button class="tab-btn active" data-tab="dev">
+                <strong>Development</strong>
+                <span>本地和开发环境</span>
+              </button>
+              <button class="tab-btn" data-tab="ci">
+                <strong>CI / Review</strong>
+                <span>合并前检查</span>
+              </button>
+              <button class="tab-btn" data-tab="prod">
+                <strong>Production</strong>
+                <span>云端定时运行</span>
+              </button>
+              <button class="tab-btn" data-tab="alert">
+                <strong>Alerting</strong>
+                <span>失败和修复流程</span>
+              </button>
+            </div>
+
+            <div class="tab-content">
+              <h3 id="tabTitle">Development</h3>
+              <p id="tabText">Data Analyst 在 VS Code 或 dbt Cloud IDE 里写 SQL models、YAML tests 和 custom SQL tests。用开发 schema 跑 `dbt build --select tag:regulatory_report`，确认模型和测试能跑通。</p>
+              <div class="code-box" id="tabCode">$ dbt build --select tag:regulatory_report
+PASS source_freshness_policy_transactions
+PASS not_null_policy_id
+PASS unique_transaction_id
+PASS assert_premium_reconciles_to_ledger</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="band alt" id="roadmap">
+        <div class="inner">
+          <div class="section-head">
+            <h2>7. 实施路线图</h2>
+            <p>如果这个项目真的要落地，可以按四个阶段推进。这样面试时你能讲清楚“先做什么，后做什么”。</p>
+          </div>
+
+          <div class="timeline">
+            <div class="phase">
+              <b>Phase 1</b>
+              <div>
+                <h3>Discovery and data profiling</h3>
+                <p>梳理监管报表字段、数据源、业务口径、历史审计问题。对 raw policy transaction 和 premium ledger 做 profiling。</p>
+              </div>
+              <span>Deliverable: data dictionary + validation rule inventory</span>
+            </div>
+            <div class="phase">
+              <b>Phase 2</b>
+              <div>
+                <h3>dbt modeling foundation</h3>
+                <p>建立 staging、intermediate、regulatory marts。统一字段命名、数据类型、日期窗口和金额符号。</p>
+              </div>
+              <span>Deliverable: dbt models + docs site</span>
+            </div>
+            <div class="phase">
+              <b>Phase 3</b>
+              <div>
+                <h3>Automated validation gates</h3>
+                <p>实现 generic tests、自定义 SQL reconciliation tests、freshness checks、exception exports。</p>
+              </div>
+              <span>Deliverable: quality gate job + failed row tables</span>
+            </div>
+            <div class="phase">
+              <b>Phase 4</b>
+              <div>
+                <h3>Reporting and audit readiness</h3>
+                <p>把通过验证的数据接入 Tableau/reporting，并生成 audit pack：规则清单、运行结果、异常修复记录。</p>
+              </div>
+              <span>Deliverable: dashboard + audit evidence package</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="band" id="risks">
+        <div class="inner">
+          <div class="section-head">
+            <h2>8. 风险、缓解方案和验收标准</h2>
+            <p>Design document 不能只画漂亮流程，还要说明项目哪里可能失败，以及怎样判断它真的完成了。</p>
+          </div>
+
+          <table class="risk-table">
+            <thead>
+              <tr>
+                <th>Risk</th>
+                <th>Why it matters</th>
+                <th>Mitigation</th>
+                <th>Acceptance criteria</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>上游数据延迟</td>
+                <td>报表可能基于过期数据。</td>
+                <td>source freshness test + SLA alert。</td>
+                <td>超过 SLA 的 source 会自动 warn/fail，不会静默进入报表。</td>
+              </tr>
+              <tr>
+                <td>监管口径变化</td>
+                <td>旧规则可能不再合法。</td>
+                <td>规则版本化，mapping table 加 effective date。</td>
+                <td>可以按 reporting period 重现当时的规则。</td>
+              </tr>
+              <tr>
+                <td>测试误报太多</td>
+                <td>团队会忽略告警。</td>
+                <td>设置 severity、tolerance、issue owner。</td>
+                <td>critical tests fail，non-critical tests warn，owner 明确。</td>
+              </tr>
+              <tr>
+                <td>SQL 性能慢</td>
+                <td>审计前运行时间过长。</td>
+                <td>增量模型、分区过滤、先聚合再 join。</td>
+                <td>regulatory validation job 在约定窗口内完成。</td>
+              </tr>
+              <tr>
+                <td>缺少审计证据</td>
+                <td>即使数据正确，也难以证明。</td>
+                <td>保存 run results、failed rows、Git SHA、修复记录。</td>
+                <td>每次报表生成都有可导出的 audit pack。</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="band alt" id="story">
+        <div class="inner">
+          <div class="section-head">
+            <h2>9. 面试时的项目叙述</h2>
+            <p>这个 design document 最后要服务你的简历。下面这段可以把“设计”和“落地”一起讲清楚。</p>
+          </div>
+
+          <div class="closeout">
+            <div class="script">
+              <h3>English version</h3>
+              <p>
+                I worked on a regulatory reporting data quality workflow for a P&C insurance SaaS platform. The goal was to make premium and policy transaction data reliable before it reached regulatory reporting and client dashboards. I helped design the data flow from ingestion into the warehouse, standardized the data through dbt models, and implemented SQL validation tests for completeness, duplicate transactions, premium reconciliation, business rules, and source freshness. These tests were version-controlled, reviewed through Git, and run in scheduled cloud jobs. The result was a repeatable audit-ready process with failed row outputs, logs, and evidence packages, reducing audit preparation from weeks to hours.
+              </p>
+            </div>
+            <div class="card">
+              <h3>你要记住的落地点</h3>
+              <ul>
+                <li>业务目标：监管报表准确、及时、可审计。</li>
+                <li>产品位置：Regul8 regulatory reporting data platform。</li>
+                <li>技术实现：cloud warehouse + dbt models + SQL tests + scheduler。</li>
+                <li>你的贡献：把人工检查规则产品化，变成自动运行的 quality gates。</li>
+                <li>业务影响：更快审计准备、更少人工错误、更清楚的数据责任归属。</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <div class="inner">
+          <p>Design note: This document is a project blueprint based on the CoEvolves product PDF and your resume bullets. It is intentionally written as a practical interview artifact, not as a claim about private internal implementation details.</p>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    const tabData = {
+      dev: {
+        title: "Development",
+        text: "Data Analyst 在 VS Code 或 dbt Cloud IDE 里写 SQL models、YAML tests 和 custom SQL tests。用开发 schema 跑 `dbt build --select tag:regulatory_report`，确认模型和测试能跑通。",
+        code: `$ dbt build --select tag:regulatory_report
+PASS source_freshness_policy_transactions
+PASS not_null_policy_id
+PASS unique_transaction_id
+PASS assert_premium_reconciles_to_ledger`
+      },
+      ci: {
+        title: "CI / Review",
+        text: "代码提交到 Git 后开 Pull Request。同事 review 业务逻辑和 SQL 写法，CI 跑 compile、lint、selected dbt tests，防止新规则破坏已有监管报表。",
+        code: `Pull Request checks
+1. SQL lint
+2. dbt compile
+3. dbt build --select state:modified+
+4. reviewer approval
+5. merge to main`
+      },
+      prod: {
+        title: "Production",
+        text: "合并后，云端 scheduler 在生产 warehouse 上运行 regulatory reporting job。dbt 不存数据，而是把 SQL 发到 warehouse 执行，并保存运行结果。",
+        code: `Scheduled job
+02:00 source freshness
+02:15 ingestion validation
+02:30 dbt build regulatory marts
+03:00 publish report tables
+03:15 refresh dashboards`
+      },
+      alert: {
+        title: "Alerting",
+        text: "如果 validation 失败，系统把失败规则、失败行、影响的 reporting period 和 owner 发到 Slack/Email 或 issue queue。修复后重新运行 job。",
+        code: `Alert payload
+status: failed
+test: assert_premium_reconciles_to_ledger
+period: 2025-05
+failed_rows: 18
+owner: regulatory_data_team
+next_action: investigate ledger mismatch`
+      }
+    };
+
+    const tabButtons = document.querySelectorAll(".tab-btn");
+    const tabTitle = document.getElementById("tabTitle");
+    const tabText = document.getElementById("tabText");
+    const tabCode = document.getElementById("tabCode");
+
+    function renderTab(name) {
+      const tab = tabData[name];
+      tabButtons.forEach((button) => {
+        button.classList.toggle("active", button.dataset.tab === name);
+      });
+      tabTitle.textContent = tab.title;
+      tabText.textContent = tab.text;
+      tabCode.textContent = tab.code;
+    }
+
+    tabButtons.forEach((button) => {
+      button.addEventListener("click", () => renderTab(button.dataset.tab));
+    });
+  </script>
+</body>
+</html>
